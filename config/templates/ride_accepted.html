@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Ride Accepted{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Ride Accepted</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Ride ID:</strong> {{ ride_order.id }}</p>
+            <p><strong>Passenger Name:</strong> {{ ride_order.name }}</p>
+            <p><strong>Departure:</strong> {{ ride_order.departure }}</p>
+            <p><strong>Destination:</strong> {{ ride_order.destination }}</p>
+            <p><strong>Accepted Time:</strong> {{ ride_order.accepted_time }}</p>
+            <p><strong>Status:</strong> {{ ride_order.status }}</p>
+            <p><strong>Driver ID:</strong> {{ ride_order.driver_id }}</p>
+            <a href="{{ url_for('drivers.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+            <a href="{{ url_for('drivers.display_rides') }}" class="btn btn-primary">See remaining available rides </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

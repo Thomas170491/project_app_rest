@@ -1,0 +1,18 @@
+{%extends 'base.html'%}
+{% block title %}Order Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Ride Order Status</h1>
+    <p>Your ride order status is: <strong>{{ ride_status }}</strong></p>
+    {% if ride_status == 'accepted' %}
+        <p>Congratulations! Your ride has been accepted.</p>
+    {% elif ride_status == 'pending' %}
+        <p>Your ride order is still pending. Please wait for confirmation.</p>
+    {% elif ride_status == 'rejected' %}
+        <p>Sorry, your ride order has been rejected.</p>
+    {% else %}
+        <p>Status: {{ ride_status }}</p>
+    {% endif %}
+</div>
+{% endblock %}

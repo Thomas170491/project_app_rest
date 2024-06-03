@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+Available Rides - RideShare App
+{% endblock %}
+
+{% block content %}
+    <h1 class="mt-4">Available Rides</h1>
+    <ul class="list-group mt-3">
+        {% for ride in rides %}
+            <li class="list-group-item">
+                <strong>Ride ID:</strong> {{ ride.id }}<br>
+                <strong>From:</strong> {{ ride.departure }}<br>
+                <strong>To:</strong> {{ ride.destination }}<br>
+                <strong>Requested by:</strong> {{ ride.name}}<br>
+                <a href="{{ url_for('drivers.accept_ride', ride_id=ride.id) }}" class="btn btn-primary mt-2">Accept Ride</a>
+                <a href="{{ url_for('drivers.decline_ride', ride_id=ride.id) }}" class="btn btn-danger mt-2">Decline Ride</a>
+            </li>
+        {% else %}
+            <li class="list-group-item">No rides available at the moment.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

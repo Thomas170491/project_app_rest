@@ -1,0 +1,14 @@
+{%extends "base.html"%}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+    <h2>User Dashboard</h2>
+    <p>Welcome to your dashboard, {{ current_user.username }}!</p>
+    <ul>
+        <li><a href="{{ url_for('users.order_ride') }}">Order a Ride</a></li>
+        <li><a href="{{ url_for('users.order_status') }}">Check the status of your ride orders</a></li>
+
+       
+    </ul>
+{% endblock %}

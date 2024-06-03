@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Driver Dashboard{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mt-5">Driver Dashboard</h2>
+          <!-- Display the driver's username -->
+    <div class="mb-3">
+        <p>Welcome, {{ current_user.username }}!</p>
+    </div>
+
+        <a href="{{ url_for('drivers.display_rides') }}" class="btn btn-primary mt-2">Display Rides</a>
+        <!-- Add dashboard content here, such as a list of pending rides -->
+        <ul class="list-group mt-3">
+            {% for ride in rides %}
+            <li class="list-group-item">
+                <strong>Ride ID:</strong> {{ ride.id }}
+                <strong>Status:</strong> {{ ride.status }}
+                <form method="POST" action="{{ url_for('drivers.accept_ride', ride_id=ride.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                </form>
+                <form method="POST" action="{{ url_for('drivers.decline_ride', ride_id=ride.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Decline</button>
+                </form>
+            </li>
+            {% endfor %}
+         
+        </ul>
+    </div>
+</div>
+{% endblock %}

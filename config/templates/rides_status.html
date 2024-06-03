@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Status{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Order Status</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Name</th>
+                <th>Departure</th>
+                <th>Destination</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ride in rides %}
+            <tr>
+                <td>{{ ride.id }}</td>
+                <td>{{ ride.name }}</td>
+                <td>{{ ride.departure }}</td>
+                <td>{{ ride.destination }}</td>
+                <td>{{ ride.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Order Confirmation</h2>
+    <p><strong>Name:</strong> {{ name }}</p>
+    <p><strong>Departure:</strong> {{ departure }}</p>
+    <p><strong>Destination:</strong> {{ destination }}</p>
+    <p><strong>Driver will arrive at:</strong> {{ time }}</p>
+    <p>
+        <a href="{{ url_for('users.order_status', ride_id=ride_id) }}" class="btn btn-primary mt-3">Check Order Status</a>
+    </p>
+</div>
+{% endblock %}
