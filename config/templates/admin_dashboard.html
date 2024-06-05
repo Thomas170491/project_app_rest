@@ -88,6 +88,12 @@
                 <td>{{ admin.username }}</td>
                 <td>{{ admin.email }}</td>
                 <td>Admin</td>
+                <td>
+                    <form action="{{ url_for('admins.delete_admin', user_id=admin.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+
+                </td>
             </tr>
             {% endfor %}
         </tbody>

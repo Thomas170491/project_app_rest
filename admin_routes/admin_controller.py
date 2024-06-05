@@ -95,6 +95,15 @@ def edit_user(user_id):
     flash("User updated successfully", 'success')
     return redirect(url_for('admins.dashboard',  users=users))
 
+@admins.route("/delete_admin/<int:user_id>", methods=['POST'])
+@login_required
+@role_required("admin")
+def delete_admin(user_id):
+    admins = User.query.get_or_404(user_id)
+    db.session.delete(admins)
+    db.session.commit()
+    flash("Admin deleted successfully", 'success')
+    return redirect(url_for('admins.dashboard', admins=admins ))
 @admins.route("/logout")
 @login_required
 @role_required("admin")
