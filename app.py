@@ -48,12 +48,16 @@ def register(token):
             
             # Redirect the user to the home page (index) as the link is invalid
             return redirect(url_for('index'))
-
+        
         # Create a new instance of the registration form
         form = RegistrationForm()
+        existing_user = User.query.filter_by(email=email).first()
 
         # Check if the form has been submitted and is valid
         if form.validate_on_submit():
+            if existing_user:
+                flash('Error. Email already exists')
+                return redirect(url_for(index))
             # Verify that the email provided in the form matches the email extracted from the token
             if email == form.email.data: 
                 # Create a new user instance based on the role extracted from the token

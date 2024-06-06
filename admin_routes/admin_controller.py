@@ -24,6 +24,7 @@ admins = Blueprint("admins", "admins", url_prefix="/admins", description="admin 
 @role_required('admin')
 def send_link():
     form = InvitationForm()
+    
     if form.validate_on_submit():
         email = form.email.data
         role = form.role.data
