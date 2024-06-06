@@ -60,17 +60,10 @@ class RideOrder(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ID of the user who accepts the ride
     
     user = db.relationship('User', backref='ride_orders', lazy=True, foreign_keys=[user_id])
-
-   '''
-    User: This specifies the related model. Here, it indicates that this model is related to the User model.
-    backref='ride_orders': This creates a bi-directional relationship. 
-    It means that from the User model, you can access a list of associated objects from this model via the attribute ride_orders.
-    lazy=True: This determines how the related objects are loaded. With lazy=True, the related objects are loaded when the relationship is accessed. 
-    There are several options for lazy, such as 'select', 'joined', 'subquery', etc., which control the loading strategy.
-    foreign_keys=[user_id]: This specifies which foreign key(s) should be used in the relationship. 
-    Here, user_id is a foreign key in this model that links to the User model.
-   ''' 
-  def __repr__(self):
+    
+    ''''''
+    
+    def __repr__(self):
         return f'<RideOrder {self.id}>'
 
 class InvitationEmails(db.Model):  
