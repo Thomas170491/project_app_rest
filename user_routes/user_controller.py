@@ -45,31 +45,39 @@ def dashboard():
   return render_template('user_dashboard.html')
 
 
-@users.route('/order_ride', methods=['GET','POST'])
+@users.route('/order_ride', methods=['GET', 'POST'])
 @login_required  # Protecting our pages
 @role_required("user")
 def order_ride():
     form = OrderRide()
     if form.validate_on_submit():
-        order = RideOrder(
-            name=form.name.data,
-            departure=form.departure.data,
-            destination=form.destination.data,
-            time=form.time.data,
-            user_id= current_user.id,
-            price = calculate_price(form.departure.data,form.destination.data)
-        )
-        db.session.add(order)
-        db.session.commit()
-        flash("Your ride is on the way", 'success')
-        return redirect(url_for('users.order_confirmation', 
-                                name=form.name.data,
-                                departure=form.departure.data,
-                                destination=form.destination.data,
-                                time=form.time.data,
-                                ride_id = order.id,
-                                price = calculate_price(form.departure.data,form.destination.data)))
+        # Form data is valid, proceed with further processing
+            try:
+                price = calculate_price(form.departure.data, form.destination.data)
+            except Exception as e:
+                flash("Failed to calculate price. Please try again.", 'danger')
+                return redirect(url_for('users.order_ride'))
+
+            order = RideOrder(
+                name=form.name.data,
+                departure=form.departure.data,
+                destination=form.destination.data,
+                time=form.time.data,
+                user_id=current_user.id,
+                price=price
+            )
+            db.session.add(order)
+            db.session.commit()
+            flash("Your ride is on the way", 'success')
+            return redirect(url_for('users.order_confirmation',
+                                    name=form.name.data,
+                                    departure=form.departure.data,
+                                    destination=form.destination.data,
+                                    time=form.time.data,
+                                    ride_id=order.id,
+                                    price=price))
     return render_template('order_ride.html', form=form)
+
 @users.route('/order_confirmation/<int:ride_id>')
 @login_required
 @role_required('user')
@@ -108,6 +116,9 @@ def calculate_price_route():
     data = request.get_json()
     departure = data.get('departure')
     destination = data.get('destination')
+    
+    if not departure or not destination:
+        return {'error': 'Invalid input'}, 400
     
     price = calculate_price(departure, destination)
     

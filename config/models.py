@@ -91,7 +91,7 @@ def create_app():
     app = Flask(__name__)
 
     # Configure the Flask application with necessary settings
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/nomades/Documents/pse_2024_0405/flask/Project_App/instance/project_app.db'  # Database URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/nomades/Documents/project_app/instance/project_app.db'  # Database URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Disable track modifications to save resources
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')  # Secret key for session management and CSRF protection
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  # Secret key for JWT
