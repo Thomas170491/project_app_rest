@@ -10,7 +10,7 @@ from forms import  LoginForm, OrderRide
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_smorest import Blueprint
 from decorators.decorators import role_required
-
+from user_service import calculate_price
 
 users = Blueprint("users", "users", url_prefix="/users", description="users routes")
 
@@ -56,7 +56,8 @@ def order_ride():
             departure=form.departure.data,
             destination=form.destination.data,
             time=form.time.data,
-            user_id= current_user.id
+            user_id= current_user.id,
+            price = calculate_price(form.departure.data,form.destination.data)
         )
         db.session.add(order)
         db.session.commit()
@@ -66,7 +67,8 @@ def order_ride():
                                 departure=form.departure.data,
                                 destination=form.destination.data,
                                 time=form.time.data,
-                                ride_id = order.id))
+                                ride_id = order.id,
+                                price = calculate_price(form.departure.data,form.destination.data)))
     return render_template('order_ride.html', form=form)
 @users.route('/order_confirmation/<int:ride_id>')
 @login_required
@@ -97,7 +99,20 @@ def order_confirmation(ride_id):
 def order_status():
     rides = RideOrder.query.all()
     
-    return render_template('rides_status.html', rides=rides)                              
+    return render_template('rides_status.html', rides=rides)  
+
+@users.route('/calculate_price', methods=['POST'])
+@login_required
+@role_required("user")
+def calculate_price_route():
+    data = request.get_json()
+    departure = data.get('departure')
+    destination = data.get('destination')
+    
+    price = calculate_price(departure, destination)
+    
+    return {'price': price}
+                            
 
 @users.route('/order_status/<int:ride_id>')
 @login_required

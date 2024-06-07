@@ -1,15 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} <!--CODE BY CHATGPT-->
 
 {% block title %}Order Ride{% endblock %}
 
 {% block content %}
 <div class="container">
     <h2>Order Ride</h2>
-    <form method="POST" action="{{ url_for('users.order_ride') }}">
+    <form method="POST" action="{{ url_for('users.order_ride') }}" id="rideForm">
         {{ form.hidden_tag() }}
         <div class="form-group">
             <label for="name">{{ form.name.label }}</label>
-            {{ form.name(class="form-control", id= "name", placeholder= "Enter name")}}
+            {{ form.name(class="form-control", id="name", placeholder="Enter name") }}
         </div>    
         <div class="form-group">
             <label for="departure">{{ form.departure.label }}</label>
@@ -23,6 +23,7 @@
             <label for="time">{{ form.time.label }}</label>
             {{ form.time(class="form-control", id="time", placeholder="Enter time") }}
         </div>
+        <p>Estimated Price: $<span id="price">0.00</span></p>
         <button type="submit" class="btn btn-primary">Order Ride</button>
     </form>
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -37,4 +38,29 @@
         {% endif %}
     {% endwith %}
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function updatePrice() {
+            var departure = $('#departure').val();
+            var destination = $('#destination').val();
+
+            if (departure && destination) {
+                $.ajax({
+                    url: "{{ url_for('users.calculate_price_route') }}",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({departure: departure, destination: destination}),
+                    success: function(response) {
+                        $('#price').text(response.price.toFixed(2));
+                    }
+                });
+            }
+        }
+
+        $('#departure, #destination').on('change', updatePrice);
+        $('#departure, #destination').on('input', updatePrice);
+    });
+</script>
 {% endblock %}
