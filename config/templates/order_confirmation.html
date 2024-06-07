@@ -9,6 +9,7 @@
     <p><strong>Departure:</strong> {{ departure }}</p>
     <p><strong>Destination:</strong> {{ destination }}</p>
     <p><strong>Driver will arrive at:</strong> {{ time }}</p>
+    <p><strong>Your price is : {{ price }}</strong></p>
     <p>
         <a href="{{ url_for('users.order_status', ride_id=ride_id) }}" class="btn btn-primary mt-3">Check Order Status</a>
     </p>
