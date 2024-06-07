@@ -57,7 +57,7 @@ def register(token):
         if form.validate_on_submit():
             if existing_user:
                 flash('Error. Email already exists')
-                return redirect(url_for(inde))
+                return redirect(url_for(index))
             # Verify that the email provided in the form matches the email extracted from the token
             if email == form.email.data: 
                 # Create a new user instance based on the role extracted from the token

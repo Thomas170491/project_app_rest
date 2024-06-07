@@ -58,6 +58,7 @@ class RideOrder(db.Model):
     time = db.Column(db.String(10), nullable=False,  default=lambda: datetime.utcnow().strftime('%H:%M:%S'))
     status = db.Column(db.String(20), default='pending')  # Ride status
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ID of the user who accepts the ride
+    price = db.Column(db.Integer, nullable = False)
     
     user = db.relationship('User', backref='ride_orders', lazy=True, foreign_keys=[user_id])
     
