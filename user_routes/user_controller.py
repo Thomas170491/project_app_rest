@@ -46,37 +46,36 @@ def dashboard():
 
 
 @users.route('/order_ride', methods=['GET', 'POST'])
-@login_required  # Protecting our pages
+@login_required
 @role_required("user")
 def order_ride():
     form = OrderRide()
     if form.validate_on_submit():
-        # Form data is valid, proceed with further processing
-            try:
-                price = calculate_price(form.departure.data, form.destination.data)
-            except Exception as e:
-                flash("Failed to calculate price. Please try again.", 'danger')
-                return redirect(url_for('users.order_ride'))
-
-            order = RideOrder(
-                name=form.name.data,
-                departure=form.departure.data,
-                destination=form.destination.data,
-                time=form.time.data,
-                user_id=current_user.id,
-                price=price
-            )
-            db.session.add(order)
-            db.session.commit()
-            flash("Your ride is on the way", 'success')
-            return redirect(url_for('users.order_confirmation',
-                                    name=form.name.data,
-                                    departure=form.departure.data,
-                                    destination=form.destination.data,
-                                    time=form.time.data,
-                                    ride_id=order.id,
-                                    price=price))
+        # Access the departure and destination properties to get the full addresses
+        full_departure_address = form.departure
+        full_destination_address = form.destination
+        
+        order = RideOrder(
+            name=form.name.data,
+            departure=full_departure_address,
+            destination=full_destination_address,
+            time=form.time.data,
+            user_id=current_user.id,
+            price=calculate_price(full_departure_address, full_destination_address)
+        )
+        
+        db.session.add(order)
+        db.session.commit()
+        flash("Your ride is on the way", 'success')
+        return redirect(url_for('users.order_confirmation', 
+                                name=form.name.data,
+                                departure=full_departure_address,
+                                destination=full_destination_address,
+                                time=form.time.data,
+                                ride_id=order.id,
+                                price=calculate_price(full_departure_address, full_destination_address)))
     return render_template('order_ride.html', form=form)
+
 
 @users.route('/order_confirmation/<int:ride_id>')
 @login_required
