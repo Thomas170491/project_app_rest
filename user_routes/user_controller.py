@@ -10,7 +10,7 @@ from forms import  LoginForm, OrderRide
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_smorest import Blueprint
 from decorators.decorators import role_required
-from user_service import calculate_price
+from user_routes.user_service import calculate_price
 
 users = Blueprint("users", "users", url_prefix="/users", description="users routes")
 
