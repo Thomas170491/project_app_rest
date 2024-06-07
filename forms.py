@@ -32,8 +32,7 @@ class OrderRide(FlaskForm):
     time = StringField("I want the driver to arrive at:", validators=[DataRequired()])
     price = DecimalField("Estimated Price")
     submit = SubmitField("Order Ride")
-
-    '''
+'''
     def validate(self):
         if not super().validate():
             return False
@@ -53,7 +52,8 @@ class OrderRide(FlaskForm):
             return False
 
         return True
+'''
 
 
-    '''
+  
     
