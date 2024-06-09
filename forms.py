@@ -27,39 +27,11 @@ class LoginForm(FlaskForm):
     
 class OrderRide(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    street_name_departure = StringField('Street Name of your departure', validators=[DataRequired()])
-    street_number_departure = StringField('Street Number of your departure', validators=[DataRequired()])
-    postal_code_departure = StringField('Postal Code of your departure', validators=[DataRequired()])
-    city_departure = StringField('City of your departure', validators=[DataRequired()])
-    
-    street_name_destination = StringField('Street Name of your destination', validators=[DataRequired()])
-    street_number_destination = StringField('Street Number', validators=[DataRequired()])
-    postal_code_destination = StringField('Postal Code of your destination', validators=[DataRequired()])
-    city_destination = StringField('City of your destination', validators=[DataRequired()])
+    departure = StringField("Departure", validators=[DataRequired()])
+    destination = StringField("Destination", validators=[DataRequired()])
     time = StringField("I want the driver to arrive at:", validators=[DataRequired()])
     price = DecimalField("Estimated Price")
     submit = SubmitField("Order Ride")
-    
-    def get_full_departure_address(self):
-        # Concatenate the departure address components
-        departure_address = f"{self.street_number_departure.data} {self.street_name_departure.data}, {self.postal_code_departure.data} {self.city_departure.data}"
-        return departure_address
-    
-    def get_full_destination_address(self):
-        # Concatenate the destination address components
-        destination_address = f"{self.street_number_destination.data} {self.street_name_destination.data}, {self.postal_code_destination.data} {self.city_destination.data}"
-        return destination_address
-    
-    @property
-    def departure(self):
-        # Retrieve the full departure address
-        return self.get_full_departure_address()
-    
-    @property
-    def destination(self):
-        # Retrieve the full destination address
-        return self.get_full_destination_address()
-
 '''
     def validate(self):
         if not super().validate():

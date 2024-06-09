@@ -1,44 +1,126 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Ride</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD9TzCsljMc19-ZSoiBJrbuycySEBpirE&callback=initMap" async defer></script>
+    <script>
+        let map;
+        let geocoder;
 
-{% block title %}Order Ride{% endblock %}
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 46.2044, lng: 6.1432 },  // Center map on Geneva, Switzerland
+                zoom: 12
+            });
+            geocoder = new google.maps.Geocoder();
+        }
+        function calculateAndDisplayPrice() {
+    const departureAddress = document.getElementById('departure').value;
+    const destinationAddress = document.getElementById('destination').value;
 
-{% block content %}
-<div class="container">
+    geocodeAddress(departureAddress, function(departureLocation) {
+        geocodeAddress(destinationAddress, function(destinationLocation) {
+            if (departureLocation && destinationLocation) {
+                const departureMarker = new google.maps.Marker({
+                    position: departureLocation,
+                    map: map,
+                    title: "Departure"
+                });
+
+                const destinationMarker = new google.maps.Marker({
+                    position: destinationLocation,
+                    map: map,
+                    title: "Destination"
+                });
+
+                const bounds = new google.maps.LatLngBounds();
+                bounds.extend(departureLocation);
+                bounds.extend(destinationLocation);
+                map.fitBounds(bounds);
+
+                // Calculate distance and price
+                const service = new google.maps.DistanceMatrixService();
+                service.getDistanceMatrix({
+                    origins: [departureLocation],
+                    destinations: [destinationLocation],
+                    travelMode: 'DRIVING',
+                    unitSystem: google.maps.UnitSystem.METRIC,
+                }, function(response, status) {
+                    if (status === 'OK') {
+                        const distanceText = response.rows[0].elements[0].distance.text;
+                        const distanceValue = response.rows[0].elements[0].distance.value;
+                        const price = calculatePrice(distanceValue);
+
+                        // Display the distance and price
+                        document.getElementById('price').innerText = `Distance: ${distanceText}, Price: $${price}`;
+                    } else {
+                        alert("Error calculating distance: " + status);
+                    }
+                });
+            } else {
+                alert("Could not geocode one or both addresses.");
+            }
+        });
+    });
+}
+
+function calculatePrice(distanceValue) {
+    // Assuming a base rate and per km rate
+    const baseRate = 5; // Base rate in dollars
+    const perKmRate = 1; // Rate per kilometer in dollars
+
+    const distanceInKm = distanceValue / 1000; // Convert meters to kilometers
+    return (baseRate + (distanceInKm * perKmRate)).toFixed(2); // Calculate total price
+}
+
+function geocodeAddress(address, callback) {
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'address': address }, function(results, status) {
+        if (status === 'OK') {
+            callback(results[0].geometry.location);
+        } else {
+            callback(null);
+            alert('Geocode was not successful for the following reason: ' + status);
+        }
+    });
+}
+
+
+    
+    </script>
+</head>
+<body>
     <h2>Order Ride</h2>
-    <form method="POST" action="{{ url_for('users.order_ride') }}">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            <label for="name">{{ form.name.label }}</label>
-            {{ form.name(class="form-control", id="name", placeholder="Enter name") }}
-        </div>    
-        <div class="form-group">
-            <label for="departure">{{ form.departure.label }}</label>
-            {{ form.departure(class="form-control", id="departure", placeholder="Enter departure location") }}
-        </div>
-        <div class="form-group">
-            <label for="destination">{{ form.destination.label }}</label>
-            {{ form.destination(class="form-control", id="destination", placeholder="Enter destination location") }}
-        </div>
-        <div class="form-group">
-            <label for="time">{{ form.time.label }}</label>
-            {{ form.time(class="form-control", id="time", placeholder="Enter time") }}
-        </div>
-        <div class="form-group">
-            <label>Estimated Price:</label>
-            <p>${{ form.price.data }}</p>
-        </div>
-        <button type="submit" class="btn btn-primary">Order Ride</button>
-    </form>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="mt-3">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+    <div class="container">
+        <h1>Order a Ride</h1>
+        <form method="POST" action="{{ url_for('users.order_ride') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.name.label }}
+                {{ form.name(class_="form-control") }}
             </div>
-        {% endif %}
-    {% endwith %}
-</div>
-{% endblock %}
+            
+            <div class="form-group">
+                {{ form.departure.label }}
+                {{ form.departure(class_="form-control") }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.destination.label }}
+                {{ form.destination(class_="form-control") }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.time.label }}
+                {{ form.time(class_="form-control") }}
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Order Ride</button>
+        </form>
+    </div>
+    <button onclick="calculateAndDisplayPrice()">Calculate Price</button>
+    <div id="map" style="height: 500px; width: 100%; margin-top: 10px;"></div>
+</body>
+</html>
