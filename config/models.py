@@ -11,7 +11,7 @@ from flask_mail import Mail,Message
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from _datetime import datetime 
-
+from flask_cors import CORS
 
 # Initialize extensions
 
@@ -19,7 +19,7 @@ db = SQLAlchemy()  # SQLAlchemy for database interactions
 login_manager = LoginManager()  # Flask-Login for user session management
 mail = Mail()  # Flask-Mail for email handling
 jwt = JWTManager()  # Flask-JWT-Extended for JWT authentication
-
+cors = CORS()
 #Data classes 
 
 class User(db.Model, UserMixin):
@@ -51,20 +51,20 @@ class User(db.Model, UserMixin):
 
    
 class RideOrder(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    departure = db.Column(db.String(200), nullable=False)
-    destination = db.Column(db.String(200), nullable=False)
-    time = db.Column(db.String(10), nullable=False,  default=lambda: datetime.utcnow().strftime('%H:%M:%S'))
-    status = db.Column(db.String(20), default='pending')  # Ride status
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ID of the user who accepts the ride
-    price = db.Column(db.Integer, nullable = False)
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(100), nullable=False)
+  departure = db.Column(db.String, nullable=False)
+  destination= db.Column(db.String, nullable=False)
+  time = db.Column(db.String(100), nullable=False)
+  status = db.Column(db.String(20), default='pending')  # Ride status
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ID of the user who accepts the ride
+  price = db.Column(db.Integer, nullable = False)
     
-    user = db.relationship('User', backref='ride_orders', lazy=True, foreign_keys=[user_id])
+  user = db.relationship('User', backref='ride_orders', lazy=True, foreign_keys=[user_id])
     
-    ''''''
+
     
-    def __repr__(self):
+  def __repr__(self):
         return f'<RideOrder {self.id}>'
 
 class InvitationEmails(db.Model):  
@@ -110,6 +110,7 @@ def create_app():
     db.init_app(app)  # Initialize SQLAlchemy
     mail.init_app(app)  # Initialize Flask-Mail
     jwt.init_app(app)  # Initialize Flask-JWT-Extended
+    cors.init_app(app)
 
     # Create database tables if they don't exist
     with app.app_context():

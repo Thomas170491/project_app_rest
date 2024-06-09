@@ -3,7 +3,7 @@ import sys
  
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from config.models import  db 
-from flask import request, render_template, flash, redirect, url_for, abort
+from flask import request, render_template, flash, redirect, url_for, abort,jsonify
 from config.models import User, RideOrder
 from werkzeug.urls import url_parse
 from forms import  LoginForm, OrderRide
@@ -51,17 +51,13 @@ def dashboard():
 def order_ride():
     form = OrderRide()
     if form.validate_on_submit():
-        # Access the departure and destination properties to get the full addresses
-        full_departure_address = form.departure
-        full_destination_address = form.destination
-        
         order = RideOrder(
             name=form.name.data,
-            departure=full_departure_address,
-            destination=full_destination_address,
+            departure=form.departure.data,
+            destination= form.destination.data,
             time=form.time.data,
             user_id=current_user.id,
-            price=calculate_price(full_departure_address, full_destination_address)
+            price=calculate_price(form.departure.data, form.destination.data)
         )
         
         db.session.add(order)
@@ -69,11 +65,11 @@ def order_ride():
         flash("Your ride is on the way", 'success')
         return redirect(url_for('users.order_confirmation', 
                                 name=form.name.data,
-                                departure=full_departure_address,
-                                destination=full_destination_address,
+                                departure=form.departure.data,
+                                destination= form.destination.data,
                                 time=form.time.data,
                                 ride_id=order.id,
-                                price=calculate_price(full_departure_address, full_destination_address)))
+                                price=calculate_price(form.departure.data, form.destination.data)))
     return render_template('order_ride.html', form=form)
 
 
@@ -108,20 +104,29 @@ def order_status():
     
     return render_template('rides_status.html', rides=rides)  
 
-@users.route('/calculate_price', methods=['POST'])
+@users.route('/calculate_price', methods=['GET','POST'])
 @login_required
 @role_required("user")
-def calculate_price_route():
-    data = request.get_json()
-    departure = data.get('departure')
-    destination = data.get('destination')
-    
-    if not departure or not destination:
-        return {'error': 'Invalid input'}, 400
-    
-    price = calculate_price(departure, destination)
-    
-    return {'price': price}
+def calculate_price():
+    # Check if the request contains JSON data
+    if request.is_json:
+        # Parse JSON data from the request body
+        data = request.json
+        
+        # Extract departure and destination addresses from the JSON data
+        departure_address = data.get('departure')
+        destination_address = data.get('destination')
+        
+        # Perform price calculation logic here based on the departure and destination addresses
+        # For demonstration purposes, let's just return a dummy price
+        price = 50.0
+        
+        # Return the calculated price as JSON response
+        return jsonify({'price': price}), 200
+    else:
+        # If the request does not contain JSON data, return an error response
+        return jsonify({'error': 'Request body must be JSON'}), 400
+
                             
 
 @users.route('/order_status/<int:ride_id>')
@@ -149,4 +154,3 @@ def order_status(ride_id):
 def logout():
   logout_user()
   return redirect(url_for("users.user_login"))
-
