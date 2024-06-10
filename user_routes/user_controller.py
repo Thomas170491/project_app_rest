@@ -53,38 +53,37 @@ def dashboard():
 def order_ride():
     form = OrderRide()
     if form.validate_on_submit():
-       price = calculate_price(form.departure.data, form.destination.data)
-       print(price)
-       
-       if form.name.data != request.form['name'] or \
-           form.departure.data != request.form['departure'] or \
+        price = calculate_price(str(form.departure.data), str(form.destination.data))
+        if form.name.data != request.form['name'] or \
+          form.departure.data != request.form['departure'] or \
            form.destination.data != request.form['destination'] or \
            form.time.data != request.form['time']:
            flash("Form data has been tampered with. Please try again.", 'danger')
            return redirect(url_for('users.order_ride'))
         
-       if not isinstance(price, (int, float)):
-           raise ValueError("Calculated price is not a valid number")
+        if not isinstance(price, (int, float)):
+            raise ValueError("Calculated price is not a valid number")
 
-       order = RideOrder(
-            name=form.name.data,
-            departure=form.departure.data,
-            destination= form.destination.data,
-            time=form.time.data,
-            user_id=current_user.id,
-            price=calculate_price(form.departure.data, form.destination.data) 
-        )
+        order = RideOrder(
+                name=form.name.data,
+                departure=form.departure.data,
+                destination= form.destination.data,
+                time=form.time.data,
+                user_id=current_user.id,
+                price= price 
+            )
         
-       db.session.add(order)
-       db.session.commit()
-       flash("Your ride is on the way", 'success')
-       return redirect(url_for('users.pay', 
-                                name=form.name.data,
-                                departure=form.departure.data,
-                                destination= form.destination.data,
-                                time=form.time.data,
-                                ride_id=order.id,
-                                price=calculate_price(form.departure.data, form.destination.data)))
+            
+        db.session.add(order)
+        db.session.commit()
+        flash("Your ride is on the way", 'success')
+        return redirect(url_for('users.pay', 
+                                    name=form.name.data,
+                                    departure=form.departure.data,
+                                    destination= form.destination.data,
+                                    time=form.time.data,
+                                    ride_id=order.id,
+                                    price=calculate_price(form.departure.data, form.destination.data)))
     return render_template('order_ride.html', form=form)
 
 
@@ -134,7 +133,7 @@ def calculate_price():
         
         # Perform price calculation logic here based on the departure and destination addresses
         # For demonstration purposes, let's just return a dummy price
-        price = 50.0
+        price = calculate_price(departure_address,destination_address)
         
         # Return the calculated price as JSON response
         return jsonify({'price': price}), 200
