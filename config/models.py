@@ -58,7 +58,7 @@ class RideOrder(db.Model):
   time = db.Column(db.String(100), nullable=False)
   status = db.Column(db.String(20), default='pending')  # Ride status
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ID of the user who accepts the ride
-  price = db.Column(db.Integer, nullable = False)
+  price = db.Column(db.Float, nullable = False)
     
   user = db.relationship('User', backref='ride_orders', lazy=True, foreign_keys=[user_id])
     
@@ -101,6 +101,9 @@ def create_app():
     app.config['MAIL_USE_SSL'] = False  # Do not use SSL (we are using TLS)
     app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')  # Email username from environment variables
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  # Email password from environment variables
+    app.config['PAYPAL_CLIENT_ID'] = os.getenv('PAYPAL_CLIENT_ID')
+    app.config['PAYPAL_CLIENT_SECRET'] = os.getenv('PAYPAL_CLIENT_SECRET')
+    app.config['PAYPAL_API_BASE'] = 'https://api.sandbox.paypal.com'
     
     
 
