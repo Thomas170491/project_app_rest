@@ -10,7 +10,9 @@ from forms import  LoginForm, OrderRide
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_smorest import Blueprint
 from decorators.decorators import role_required
-from user_routes.user_service import calculate_price
+from user_routes.user_service import calculate_price,get_paypal_access_token
+import requests
+
 
 users = Blueprint("users", "users", url_prefix="/users", description="users routes")
 
@@ -51,19 +53,32 @@ def dashboard():
 def order_ride():
     form = OrderRide()
     if form.validate_on_submit():
-        order = RideOrder(
+       price = calculate_price(form.departure.data, form.destination.data)
+       print(price)
+       
+       if form.name.data != request.form['name'] or \
+           form.departure.data != request.form['departure'] or \
+           form.destination.data != request.form['destination'] or \
+           form.time.data != request.form['time']:
+           flash("Form data has been tampered with. Please try again.", 'danger')
+           return redirect(url_for('users.order_ride'))
+        
+       if not isinstance(price, (int, float)):
+           raise ValueError("Calculated price is not a valid number")
+
+       order = RideOrder(
             name=form.name.data,
             departure=form.departure.data,
             destination= form.destination.data,
             time=form.time.data,
             user_id=current_user.id,
-            price=calculate_price(form.departure.data, form.destination.data)
+            price=calculate_price(form.departure.data, form.destination.data) 
         )
         
-        db.session.add(order)
-        db.session.commit()
-        flash("Your ride is on the way", 'success')
-        return redirect(url_for('users.order_confirmation', 
+       db.session.add(order)
+       db.session.commit()
+       flash("Your ride is on the way", 'success')
+       return redirect(url_for('users.pay', 
                                 name=form.name.data,
                                 departure=form.departure.data,
                                 destination= form.destination.data,
@@ -145,6 +160,105 @@ def order_status(ride_id):
 
     # Render a template to display the status to the user
     return render_template('order_status.html', ride_status=ride_status)
+
+
+
+# Route for rendering the payment page
+@users.route('/pay/<int:ride_id>', methods=['GET'])
+@login_required  # Ensure user is logged in
+@role_required('user')  # Ensure user has the 'user' role
+def pay(ride_id):
+    # Render the payment page template and pass the PayPal client ID as a variable
+    return render_template('payment.html', ride_id=ride_id, client_id=os.getenv('PAYPAL_CLIENT_ID'))
+
+# Route for creating a PayPal payment
+@users.route('/create_payment/<int:ride_id>', methods=['POST'])
+@login_required  # Ensure user is logged in
+@role_required('user')  # Ensure user has the 'user' role
+def create_payment(ride_id):
+    # Obtain PayPal access token
+    access_token = get_paypal_access_token()
+    
+    # Get the departure and destination addresses from the request data (assuming they are submitted via a form)
+    departure_address = request.form.get('departure_address')
+    destination_address = request.form.get('destination_address')
+    
+    # Calculate the total payment amount based on the departure and destination addresses
+    total_amount = calculate_price(departure_address, destination_address)
+    
+    # Construct payment data with the dynamically calculated total amount
+    payment_data = {
+        "intent": "sale",  # Payment intent (sale, authorize, order)
+        "redirect_urls": {
+            "return_url": url_for('users.execute_payment', ride_id=ride_id, _external=True),  # URL to redirect after payment execution
+            "cancel_url": url_for('users.pay', ride_id=ride_id, _external=True),  # URL to redirect if payment is canceled
+        },
+        "payer": {
+            "payment_method": "paypal"  # Payment method (paypal, credit_card)
+        },
+        "transactions": [{
+            "amount": {
+                "total": str(total_amount),  # Total amount of the payment (converted to string)
+                "currency": "USD"  # Currency code (USD, EUR, etc.)
+            },
+            "description": "Ride Payment"  # Payment description
+        }]
+    }
+
+    # Make a POST request to create the payment
+    response = requests.post(
+        f"{os.getenv('PAYPAL_API_BASE')}/v1/payments/payment",  # PayPal Payments API endpoint
+        json=payment_data,  # Payment data in JSON format
+        headers={
+            "Content-Type": "application/json",  # Specify content type as JSON
+            "Authorization": f"Bearer {access_token}",  # Include access token in the authorization header
+        }
+    )
+
+    # Extract payment information from the response
+    payment = response.json()
+    
+    # Redirect user to PayPal approval URL
+    for link in payment['links']:
+        if link['rel'] == 'approval_url':
+            return redirect(link['href'])
+
+    # If payment creation failed, display an error message
+    return "Error creating payment"
+
+# Route for executing a PayPal payment
+@users.route('/execute_payment/<int:ride_id>', methods=['GET'])
+@login_required  # Ensure user is logged in
+@role_required('user')  # Ensure user has the 'user' role
+def execute_payment(ride_id):
+    # Retrieve payment ID and payer ID from query parameters
+    payment_id = request.args.get('paymentId')
+    payer_id = request.args.get('PayerID')
+    
+    # Obtain PayPal access token
+    access_token = get_paypal_access_token()
+
+    # Make a POST request to execute the payment
+    response = requests.post(
+        f"{os.getenv('PAYPAL_API_BASE')}/v1/payments/payment/{payment_id}/execute",  # PayPal execute payment endpoint
+        json={"payer_id": payer_id},  # Include payer ID in JSON format
+        headers={
+            "Content-Type": "application/json",  # Specify content type as JSON
+            "Authorization": f"Bearer {access_token}",  # Include access token in the authorization header
+        }
+    )
+
+    # Extract payment execution result from the response
+    payment = response.json()
+
+    # If payment execution is successful, display a success message
+    if payment['state'] == 'approved':
+        flash('Payment successful!', 'success')
+        return redirect(url_for('users.order_confirmation', ride_id=ride_id))  # Redirect to order confirmation page
+    # If payment execution failed, display a failure message
+    else:
+        flash('Payment failed. Please try again.', 'danger')
+        return redirect(url_for('users.pay', ride_id=ride_id))  # Redirect back to payment page
 
     
 
