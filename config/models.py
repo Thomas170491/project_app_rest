@@ -157,11 +157,7 @@ def send_invitation_email(email, deeplink):
 '''
 with app.app_context(): 
     a1 = User(username='Thomas170491', name='Thomas', surname= 'Papas', email= 'thomaspapas470@gmail.com', password= '0123456789',role = 'admin')
-    u1 = User(username='test_user1', name='Test', surname= 'Test', email= 'email2@email.com', password= 'testuser',role='driver')
-    d1 = User(username='test1', name='Test', surname= 'Test', email= 'email1@email.com', password= 'testuser', role='user')
     db.session.add(a1)
-    db.session.add(d1)
-    db.session.add(u1)
     db.session.commit()
 '''
 '''
