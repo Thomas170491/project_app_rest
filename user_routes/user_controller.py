@@ -194,8 +194,8 @@ def create_payment(ride_id):
     access_token = get_paypal_access_token()
     
     # Get the departure and destination addresses from the request data (assuming they are submitted via a form)
-    departure_address = request.form.get('departure_address')
-    destination_address = request.form.get('destination_address')
+    departure_address = request.form.get('departure')
+    destination_address = request.form.get('destination')
     
     # Calculate the total payment amount based on the departure and destination addresses
     total_amount = calculate_price(departure_address, destination_address)
@@ -231,7 +231,6 @@ def create_payment(ride_id):
 
     # Extract payment information from the response
     payment = response.json()
-    
     # Redirect user to PayPal approval URL
     for link in payment['links']:
         if link['rel'] == 'approval_url':

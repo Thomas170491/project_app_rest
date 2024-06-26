@@ -4,8 +4,6 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import requests
-from geopy.distance import geodesic
-from geopy.geocoders import Nominatim
 import googlemaps
 
 
@@ -54,13 +52,10 @@ def get_paypal_access_token():
             "Accept": "application/json",
             "Accept-Language": "en_US",
         },
-        auth=(os.getenv('PAYPAL_CLIENT_ID'), os.g('PAYPAL_CLIENT_SECRET')),
+        auth=(os.getenv('PAYPAL_CLIENT_ID'), os.getenv('PAYPAL_CLIENT_SECRET')),
         data={"grant_type": "client_credentials"}
     )
     return response.json()['access_token']
 
-# Example usage
-departure_address = 'Rue Caroline 34 1227 Les Acacias'
-destination_address = 'Rue Muzy 13 1207 Genève'
-price = calculate_price(departure_address, destination_address)
-print(f"The calculated price is ${price}")
+
+# Rajouter un système de paiement par CB et par cash
