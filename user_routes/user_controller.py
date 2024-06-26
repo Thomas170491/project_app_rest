@@ -121,7 +121,7 @@ def order_status():
 @users.route('/calculate_price', methods=['GET','POST'])
 @login_required
 @role_required("user")
-def calculate_price():
+def calculated_price():
     # Check if the request contains JSON data
     if request.is_json:
         # Parse JSON data from the request body
@@ -163,12 +163,27 @@ def order_status(ride_id):
 
 
 # Route for rendering the payment page
+
 @users.route('/pay/<int:ride_id>', methods=['GET'])
-@login_required  # Ensure user is logged in
-@role_required('user')  # Ensure user has the 'user' role
+@login_required
+@role_required('user')
 def pay(ride_id):
-    # Render the payment page template and pass the PayPal client ID as a variable
-    return render_template('payment.html', ride_id=ride_id, client_id=os.getenv('PAYPAL_CLIENT_ID'))
+    # Retrieve the ride order by ride_id
+    ride_order = RideOrder.query.get_or_404(ride_id)
+
+    # Ensure the ride order belongs to the current user
+    if ride_order.user_id != current_user.id:
+        abort(403)
+
+    # Pass the ride details to the template
+    return render_template('payment.html', 
+                           ride_id=ride_id, 
+                           name=ride_order.name,
+                           departure=ride_order.departure,
+                           destination=ride_order.destination,
+                           time=ride_order.time,
+                           client_id=os.getenv('PAYPAL_CLIENT_ID'))
+
 
 # Route for creating a PayPal payment
 @users.route('/create_payment/<int:ride_id>', methods=['POST'])
