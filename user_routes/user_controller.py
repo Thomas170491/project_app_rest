@@ -114,8 +114,8 @@ def order_confirmation(ride_id):
 @login_required
 @role_required('user')
 def order_status():
-    rides = RideOrder.query.all()
-    
+    current_user_id = current_user.id
+    rides = RideOrder.query.filter_by(user_id=current_user_id).all()
     return render_template('rides_status.html', rides=rides)  
 
 @users.route('/calculate_price', methods=['GET','POST'])
@@ -149,6 +149,9 @@ def calculated_price():
 def order_status(ride_id):
     # Retrieve the ride order by ride_id
     ride_order = RideOrder.query.get(ride_id)
+    print(ride_order.user_id)
+    print(current_user.id)
+
 
     # Check if the ride order exists and belongs to the current user
     if ride_order is None or ride_order.user_id != current_user.id:
