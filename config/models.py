@@ -31,6 +31,7 @@ class User(db.Model, UserMixin):
     surname = db.Column(db.String(50))
     gender = db.Column(db.String(50), default="female")
     role = db.Column(db.String(10))
+    vehicles = db.relationship('Vehicle', backref='driver', lazy=True)
 
     def __init__(self, username, name, surname, email, password,role):
         self.username = username
@@ -71,6 +72,23 @@ class InvitationEmails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(50))
     token = db.Column(db.String(128))
+    
+class Vehicle(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    make = db.Column(db.String(50), nullable=False)
+    model = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    driver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'make': self.make,
+            'model': self.model,
+            'year': self.year,
+            'category': self.category
+        }
 # User loader function
 
 '''
