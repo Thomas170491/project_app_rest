@@ -5,15 +5,18 @@ import googlemaps
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from user_repository import UsersRepository
-from user_mapper import UsersMapper
+from user_routes.user_repository import UsersRepository
+from user_routes.user_mapper import UsersMapper
 from flask import url_for
+from flask_login import login_user
+from werkzeug.urls import url_parse
+
 from marshmallow import ValidationError
-from dto.requests.user_request import (
+from user_routes.dto.requests.user_request import (
     LoginRequestDTO, OrderRideRequestDTO, CalculatePriceRequestDTO, 
     CreatePaymentRequestDTO, ExecutePaymentRequestDTO
 )
-from dto.responses.user_response import (
+from user_routes.dto.responses.user_response import (
     LoginResponseDTO, OrderRideResponseDTO, OrderConfirmationResponseDTO, 
     OrderStatusResponseDTO, CalculatePriceResponseDTO, PayResponseDTO, 
     CreatePaymentResponseDTO, ExecutePaymentResponseDTO

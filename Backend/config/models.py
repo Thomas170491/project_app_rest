@@ -1,16 +1,26 @@
+import os
+import sys 
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin
+from flask_login import LoginManager,UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_mail import Mail
+from flask_mail import Mail,Message
+from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
+from datetime import datetime 
 from flask_cors import CORS
 
-db = SQLAlchemy()
-login_manager = LoginManager()
-mail = Mail()
-jwt = JWTManager()
+# Initialize extensions
+
+db = SQLAlchemy()  # SQLAlchemy for database interactions
+login_manager = LoginManager()  # Flask-Login for user session management
+mail = Mail()  # Flask-Mail for email handling
+jwt = JWTManager()  # Flask-JWT-Extended for JWT authentication
 cors = CORS()
+#Data classes 
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,7 +33,7 @@ class User(db.Model, UserMixin):
     role = db.Column(db.String(10))
     vehicles = db.relationship('Vehicle', backref='driver', lazy=True)
 
-    def __init__(self, username, name, surname, email, password, role):
+    def __init__(self, username, name, surname, email, password,role):
         self.username = username
         self.name = name
         self.surname = surname
@@ -36,30 +46,33 @@ class User(db.Model, UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
+    
     def __repr__(self):
         return f'<User {self.id}>'
 
+   
 class RideOrder(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    departure = db.Column(db.String, nullable=False)
-    destination = db.Column(db.String, nullable=False)
-    time = db.Column(db.String(100), nullable=False)
-    status = db.Column(db.String(20), default='pending')  # Ride status
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ID of the user who accepts the ride
-    price = db.Column(db.Float, nullable=False)
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(100), nullable=False)
+  departure = db.Column(db.String, nullable=False)
+  destination= db.Column(db.String, nullable=False)
+  time = db.Column(db.String(100), nullable=False)
+  status = db.Column(db.String(20), default='pending')  # Ride status
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ID of the user who accepts the ride
+  price = db.Column(db.Float, nullable = False)
     
-    user = db.relationship('User', backref='ride_orders', lazy=True, foreign_keys=[user_id])
+  user = db.relationship('User', backref='ride_orders', lazy=True, foreign_keys=[user_id])
     
-    def __repr__(self):
+
+    
+  def __repr__(self):
         return f'<RideOrder {self.id}>'
 
 class InvitationEmails(db.Model):  
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(50))
     token = db.Column(db.String(128))
-
+    
 class Vehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     make = db.Column(db.String(50), nullable=False)
@@ -76,21 +89,99 @@ class Vehicle(db.Model):
             'year': self.year,
             'category': self.category
         }
+# User loader function
 
+'''
+The load_user function is defined to load a user from the  User model. 
+This function is registered with the LoginManager using the @login_manager.user_loader decorator.
+'''
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    user = User.query.get(int(user_id))
+    return user
+
 
 def create_app():
+    # Load environment variables from .env file
+    load_dotenv()
+
+    # Initialize Flask application
     app = Flask(__name__)
+
+    # Configure the Flask application with necessary settings
+    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////home/nomades/Documents/project_app_rest/instance/project_app_rest.db"
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Disable track modifications to save resources
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')  # Secret key for session management and CSRF protection
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  # Secret key for JWT
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Mail server
+    app.config['MAIL_PORT'] = 587  # Mail server port
+    app.config['MAIL_USE_TLS'] = True  # Use TLS for secure email transmission
+    app.config['MAIL_USE_SSL'] = False  # Do not use SSL (we are using TLS)
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')  # Email username from environment variables
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  # Email password from environment variables
+    app.config['PAYPAL_CLIENT_ID'] = os.getenv('PAYPAL_CLIENT_ID')
+    app.config['PAYPAL_CLIENT_SECRET'] = os.getenv('PAYPAL_CLIENT_SECRET')
+    app.config['PAYPAL_API_BASE'] = 'https://api.sandbox.paypal.com'
     
-    db.init_app(app)
-    login_manager.init_app(app)
-    mail.init_app(app)
-    jwt.init_app(app)
+    
+
+    # Initialize extensions with the Flask application
+    login_manager.init_app(app)  # Initialize Flask-Login
+    login_manager.login_view = 'users.user_login'  # Redirect not logged-in users to this page
+    db.init_app(app)  # Initialize SQLAlchemy
+    mail.init_app(app)  # Initialize Flask-Mail
+    jwt.init_app(app)  # Initialize Flask-JWT-Extended
     cors.init_app(app)
 
+    # Create database tables if they don't exist
     with app.app_context():
         db.create_all()
 
+    
+   
+
     return app
+
+app = create_app()
+
+def generate_deeplink(email, token):
+    # Generate the deeplink with the token
+    deeplink = f"http://127.0.0.1:5000/register/{token}"
+    return deeplink
+
+def send_invitation_email(email, deeplink):
+    subject = "Invitation à rejoindre notre service VTC"
+    body = f"""
+    Bonjour,
+    
+    Vous avez été invitée à rejoindre notre service VTC. Cliquez sur le lien ci-dessous pour créer votre compte :
+    
+    {deeplink}
+    
+    Cordialement,
+    L'équipe VTC
+    """
+    
+    msg = Message(subject, sender='thomaspapas470@gmail.com', recipients=[email])
+    msg.body = body
+
+    with app.app_context():
+         mail.send(msg)
+         
+
+
+
+with app.app_context(): 
+    a1 = User(username='Thomas170491', name='Thomas', surname= 'Papas', email= 'thomaspapas470@gmail.com', password= '0123456789',role = 'admin')
+    db.session.add(a1)
+    db.session.commit()
+
+
+'''
+with app.app_context(): 
+    d1 = Driver(username='test2', name='Test', surname= 'Test', email= 'email10@email.com', password= 'testuser')
+    db.session.add(d1)
+    db.session.commit()
+
+
+'''
