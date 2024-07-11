@@ -1,93 +1,75 @@
 
 
-from flask import  render_template,flash,redirect,url_for
-from config.models import app,db, InvitationEmails,User
+from flask import  render_template,flash,redirect,url_for,jsonify,request
+from flask_smorest import Api
+from Backend.config.models import app,db, InvitationEmails,User
 from flask_jwt_extended import decode_token
-from forms import RegistrationForm
+from Backend.forms import RegistrationForm
 
-from admin_routes.admin_controller import admins  # Import admin blueprint
-from user_routes.user_controller import users  # Import user blueprint
-from driver_routes.driver_controller import drivers  # Import driver blueprint
+from Backend.admin_routes.admin_controller import admins  # Import admin blueprint
+from Backend.user_routes.user_controller import users  # Import user blueprint
+from Backend.driver_routes.driver_controller import drivers  # Import driver blueprint
 
-app.register_blueprint(admins, url_prefix='/admins')  # Register admin routes under /admins
-app.register_blueprint(users, url_prefix='/users')  # Register user routes under /users
-app.register_blueprint(drivers, url_prefix='/drivers')  # Register driver routes under /drivers
 
+
+class APIConfig:
+  API_TITLE = "RideShare App v1"
+  API_VERSION = "v1"  
+  OPENAPI_VERSION = "3.0.2"
+  OPENAPI_URL_PREFIX = "/"
+  OPENAPI_SWAGGER_UI_PATH = "/docs"
+  OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+  SECRET_KEY = "some secret"
+
+app.config.from_object(APIConfig)
+
+api = Api(app)
+
+api.register_blueprint(admins, url_prefix='/admins')  # Register admin routes under /admins
+api.register_blueprint(users, url_prefix='/users')  # Register user routes under /users
+api.register_blueprint(drivers, url_prefix='/drivers')  # Register driver routes under /drivers
 
 @app.route("/")
 def index():
-    return render_template('base.html')
-
+    return jsonify({'message': 'Welcome to the API'})
 
 @app.route('/register/<token>', methods=['GET', 'POST'])
 def register(token):
+    try:
+        token_data = decode_token(token)
+        email = token_data['sub']['email']
+        role = token_data['sub']['role']
+    except Exception as e:
+        return jsonify({'message': 'Invalid token', 'error': str(e)}), 400
 
-        try:
+    db_emails = [inv.email for inv in InvitationEmails.query.all()]
 
-            # Decode the token to extract user information
-            token_data = decode_token(token)
+    if email not in db_emails:
+        return jsonify({'message': 'Invalid link'}), 400
 
-            # Extract the email and role from the decoded token data
-            email = token_data['sub']['email']
-            role = token_data['sub']['role']
-        except Exception as e:
-            # If an error occurs during token decoding (e.g., token is invalid or expired),
-            # flash an error message to the user indicating that the token is invalid
-            flash('Invalid token', 'danger')
+    data = request.get_json()
+    form = RegistrationForm(data=data)
+    existing_user = User.query.filter_by(email=email).first()
 
-            # Redirect the user to the home page (index) as the token is invalid
-            return redirect(url_for('index'))
-
-        # Fetch all invitation emails from the database
-        db_emails = [inv.email for inv in InvitationEmails.query.all()]
-
-        # Check if the email extracted from the token is in the list of invitation emails
-        if email not in db_emails:
-            # If the email is not in the invitation emails, show an error message
-            flash('Invalid link', 'danger')
-            
-            # Redirect the user to the home page (index) as the link is invalid
-            return redirect(url_for('index'))
+    if form.validate_on_submit():
+        if existing_user:
+            return jsonify({'message': 'Error. Email already exists'}), 400
         
-        # Create a new instance of the registration form
-        form = RegistrationForm()
-        existing_user = User.query.filter_by(email=email).first()
+        if email == form.email.data:
+            if role == 'admin':
+                user = User(username=form.username.data, email=form.email.data, password=form.password.data, name=form.name.data, surname=form.surname.data, role='admin')
+            elif role == 'driver':
+                user = User(username=form.username.data, email=form.email.data, password=form.password.data, name=form.name.data, surname=form.surname.data, role='driver')
+            else:
+                user = User(username=form.username.data, email=form.email.data, name=form.name.data, password=form.password.data, surname=form.surname.data, role='user')
 
-        # Check if the form has been submitted and is valid
-        if form.validate_on_submit():
-            if existing_user:
-                flash('Error. Email already exists')
-                return redirect(url_for(index))
-            # Verify that the email provided in the form matches the email extracted from the token
-            if email == form.email.data: 
-                # Create a new user instance based on the role extracted from the token
-                if role == 'admin':
-                    user = User(username=form.username.data, email=form.email.data, password=form.password.data, name=form.name.data, surname=form.surname.data, role='admin')
-                elif role == 'driver':
-                    user = User(username=form.username.data, email=form.email.data, password=form.password.data, name=form.name.data, surname=form.surname.data, role='driver')
-                else:
-                    user = User(username=form.username.data, email=form.email.data, name=form.name.data, password=form.password.data, surname=form.surname.data, role='user')
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
 
-                # Set the user's password
-                user.set_password(form.password.data)
+            return jsonify({'message': f'You are now a registered {role}'}), 201
 
-                # Add the new user to the database session
-                db.session.add(user)
+    return jsonify({'errors': form.errors}), 400
 
-                # Commit the session to save the user to the database
-                db.session.commit()
-
-                # Flash a success message indicating that the user is now registered
-                flash(f'You are now a registered {role}', 'success')
-
-                # Redirect the user to the login page 
-                return redirect(url_for('users.user_login'))
-
-        # Render the registration template with the form and email context variables
-        return render_template('register.html', form=form, email=email)
-
-
-# Run the application
 if __name__ == "__main__":
-    
     app.run(debug=True, host='0.0.0.0')
