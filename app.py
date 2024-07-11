@@ -1,13 +1,13 @@
 import os
 
-from flask import  render_template,flash,redirect,url_for,jsonify,request
+from flask import jsonify,request
 from flask_smorest import Api
-from Backend.config.models import app,db, InvitationEmails,User
+from Backend.config.models import app, db, InvitationEmails,User
 from flask_jwt_extended import decode_token
 from Backend.forms import RegistrationForm
 
 from Backend.admin_routes.admin_controller import admins  # Import admin blueprint
-from Backend.user_routes.user_controller import users  # Import user blueprint
+from Backend.user_routes.user_controller import users_blp  # Import user blueprint
 from Backend.driver_routes.driver_controller import drivers  # Import driver blueprint
 
 
@@ -21,12 +21,13 @@ class APIConfig:
   OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
   SECRET_KEY = os.getenv('API_SECRET_KEY')
 
+
 app.config.from_object(APIConfig)
 
 api = Api(app)
 
 api.register_blueprint(admins, url_prefix='/admins')  # Register admin routes under /admins
-api.register_blueprint(users, url_prefix='/users')  # Register user routes under /users
+api.register_blueprint(users_blp, url_prefix='/users')  # Register user routes under /users
 api.register_blueprint(drivers, url_prefix='/drivers')  # Register driver routes under /drivers
 
 @app.route("/")

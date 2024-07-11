@@ -1,23 +1,30 @@
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 from flask_smorest import Blueprint
-from flask import request, jsonify, redirect, url_for
+from flask import  jsonify, redirect, url_for
 from flask_login import current_user, login_required, logout_user
-from user_service import UsersService
 from decorators.decorators import role_required
-from dto.requests.user_request import (
+from user_routes.dto.requests.user_request import (
     LoginRequestDTO, OrderRideRequestDTO, CalculatePriceRequestDTO, 
     CreatePaymentRequestDTO, ExecutePaymentRequestDTO
 )
-from dto.responses.user_response import (
+
+from user_routes.dto.responses.user_response import (
     LoginResponseDTO, OrderRideResponseDTO, OrderConfirmationResponseDTO, 
     OrderStatusResponseDTO, CalculatePriceResponseDTO, PayResponseDTO, 
     CreatePaymentResponseDTO, ExecutePaymentResponseDTO
 )
 
+from user_routes.user_service import UsersService
+
 users_blp = Blueprint("users", "users", url_prefix="/users", description="users routes")
 
 @users_blp.route('/login', methods=['POST'])
 @users_blp.arguments(LoginRequestDTO)
-@users_blp.response(200, LoginResponseDTO)
+@users_blp.response(status_code=200, schema=LoginResponseDTO)
 def user_login(data):
     if current_user.is_authenticated:
         return redirect(url_for('users.dashboard'))
@@ -27,7 +34,7 @@ def user_login(data):
         return jsonify(result), 401
     return jsonify(result), 200
 
-@users_blp.route('/dashboard', methods=['GET'])
+@users_blp.route('/dashboard', methods=['GET','POST'])
 @login_required
 @role_required("user")
 @users_blp.response(200, LoginResponseDTO)

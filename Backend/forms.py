@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField,EmailField,DecimalField
 from wtforms.validators import  DataRequired, Email, EqualTo, ValidationError,Length,InputRequired
-from config.models import User 
-from user_routes.user_service import calculate_price
+#from config.models import User 
+#from user_routes.user_service import calculate_price
 
 
 class RegistrationForm(FlaskForm):
