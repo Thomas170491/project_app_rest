@@ -1,4 +1,4 @@
-
+import os
 
 from flask import  render_template,flash,redirect,url_for,jsonify,request
 from flask_smorest import Api
@@ -19,7 +19,7 @@ class APIConfig:
   OPENAPI_URL_PREFIX = "/"
   OPENAPI_SWAGGER_UI_PATH = "/docs"
   OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
-  SECRET_KEY = "some secret"
+  SECRET_KEY = os.getenv('API_SECRET_KEY')
 
 app.config.from_object(APIConfig)
 
