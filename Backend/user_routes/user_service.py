@@ -28,6 +28,8 @@ API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
 # Initialize the Google Maps client with your API key
 gmaps = googlemaps.Client(key=API_KEY)
 
+user_repository = UsersRepository()
+
 class UsersService:
 
     @staticmethod
@@ -81,7 +83,7 @@ class UsersService:
         except ValidationError as err:
             return {'error': err.messages}
         
-        user = UsersRepository.get_user_by_username(validated_data['username'])
+        user = user_repository.get_user_by_username(validated_data['username'])
         if user and user.check_password(validated_data['password']):
             login_user(user, remember=validated_data.get('remember_me', False))
             next_page = validated_data.get('next')
