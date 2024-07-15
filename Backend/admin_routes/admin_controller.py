@@ -1,112 +1,56 @@
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
-from flask import render_template, flash, redirect, url_for
-from forms import InvitationForm
-from flask_login import  logout_user, login_required
+
+from flask import request, jsonify
+from flask_login import logout_user, login_required
 from flask_smorest import Blueprint
-from flask_jwt_extended import create_access_token
-
-
-from config.models import  User, InvitationEmails, db,generate_deeplink, send_invitation_email
+from admin_service import AdminService
 from decorators.decorators import role_required
-
+from dto.requests import SendLinkRequestDTO
+from dto.responses import SendLinkResponseDTO
 
 admins = Blueprint("admins", "admins", url_prefix="/admins", description="admin routes")
 
+admin_service = AdminService()
 
-
-
-@admins.route('/send_link', methods=['GET', 'POST'])
+@admins.route('/send_link', methods=['POST'])
 @login_required
 @role_required('admin')
 def send_link():
-    form = InvitationForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        role = form.role.data
-        token = create_access_token(identity={'email': email, 'role': role})
-        deeplink = generate_deeplink(email, token)
-        invite_email = InvitationEmails(email=email, token=token)
-        db.session.add(invite_email)
-        db.session.commit()
-        send_invitation_email(email, deeplink)
-        flash('Invitation sent successfully!', 'success')
-        return redirect(url_for('admins.dashboard'))
-    return render_template('send_link.html', form=form)
+    data = request.get_json()
+    form = SendLinkRequestDTO().load(data)
+    response = admin_service.send_link(form['email'], form['role'])
+    return SendLinkResponseDTO().dump(response), 200
 
-@admins.route("/dashboard")
+@admins.route("/dashboard", methods=['GET'])
 @login_required
 @role_required("admin")
 def dashboard():
+    response = admin_service.get_dashboard_data()
+    return jsonify(response), 200
 
-    # Fetch all users, drivers, and admins from the database
-    users = User.query.filter_by(role='user')
-    drivers = User.query.filter_by(role = 'driver')
-    admins = User.query.filter_by(role = 'admin')
-
-    # Render the admin dashboard template with the retrieved data
-    return render_template('admin_dashboard.html',
-                           users=users,
-                           drivers=drivers,
-                           admins=admins)
-
-@admins.route("/delete-user/<int:user_id>", methods=['POST'])
+@admins.route("/delete-user/<user_id>", methods=['DELETE'])
 @login_required
 @role_required("admin")
 def delete_user(user_id):
-    users = User.query.get_or_404(user_id)
-    db.session.delete(users)
-    db.session.commit()
-    flash("User deleted successfully", 'success')
-    return redirect(url_for('admins.dashboard', users=users))
+    response = admin_service.delete_user(user_id)
+    return jsonify(response), 200
 
-@admins.route("/delete-driver/<int:user_id>", methods=['POST'])
-@login_required
-@role_required("admin")
-def delete_driver(user_id):
-    drivers = User.query.get_or_404(user_id)
-    db.session.delete(drivers)
-    db.session.commit()
-    flash("Driver deleted successfully", 'success')
-    return redirect(url_for('admins.dashboard', drivers=drivers ))
-
-@admins.route("/edit-driver/<int:user_id>", methods=['POST'])
-@login_required
-@role_required("admin")
-def edit_driver(user_id):
-    drivers = User.query.get_or_404(user_id)
-    drivers.role = "user"
-    db.session.add(drivers)
-    db.session.commit()
-    flash("Driver updated successfully", 'success')
-    return redirect(url_for('admins.dashboard', drivers=drivers))
-
-@admins.route("/edit-user/<int:user_id>", methods=['POST'])
+@admins.route("/edit-user/<user_id>", methods=['PATCH'])
 @login_required
 @role_required("admin")
 def edit_user(user_id):
-    users = User.query.get_or_404(user_id)
-    users.role = "driver"
-    db.session.add(users)
-    db.session.commit()
-    flash("User updated successfully", 'success')
-    return redirect(url_for('admins.dashboard',  users=users))
+    data = request.get_json()
+    new_role = data.get('role', 'user')
+    response = admin_service.edit_user_role(user_id, new_role)
+    return jsonify(response), 200
 
-@admins.route("/delete_admin/<int:user_id>", methods=['POST'])
-@login_required
-@role_required("admin")
-def delete_admin(user_id):
-    admins = User.query.get_or_404(user_id)
-    db.session.delete(admins)
-    db.session.commit()
-    flash("Admin deleted successfully", 'success')
-    return redirect(url_for('admins.dashboard', admins=admins ))
-@admins.route("/logout")
+@admins.route("/logout", methods=['POST'])
 @login_required
 @role_required("admin")
 def logout():
     logout_user()
-    return redirect(url_for("users.user_login"))
+    return jsonify({'message': 'Logged out successfully'}), 200

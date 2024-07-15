@@ -1,9 +1,7 @@
 from config.models import RideOrder
 
 class UsersMapper:
-
-    @staticmethod
-    def map_to_order_ride(data, user_id, price):
+    def map_to_order_ride(self, data, user_id, price):
         return RideOrder(
             name=data['name'],
             departure=data['departure'],
@@ -13,8 +11,7 @@ class UsersMapper:
             price=price
         )
 
-    @staticmethod
-    def map_to_order_confirmation(ride_order):
+    def map_to_order_confirmation(self, ride_order):
         return {
             'ride_id': ride_order.id,
             'name': ride_order.user.name,
@@ -23,6 +20,6 @@ class UsersMapper:
             'time': ride_order.time
         }
 
-    @staticmethod
-    def map_to_order_status(rides):
+    def map_to_order_status(self, rides):
         return [{'ride_id': ride.id, 'status': ride.status} for ride in rides]
+
