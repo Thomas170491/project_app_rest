@@ -1,8 +1,12 @@
 import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import requests
 from datetime import datetime
-from driver_repository import DriverRepository
-from driver_mapper import DriverMapper
+from driver_routes.driver_repository import DriverRepository
+from driver_routes.driver_mapper import DriverMapper
+
 
 class DriverService:
     def __init__(self):

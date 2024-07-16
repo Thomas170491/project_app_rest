@@ -1,15 +1,15 @@
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 from flask import  jsonify
 from flask_login import login_required, current_user,logout_user
 from flask_smorest import Blueprint
-from driver_routes.driver_service import DriverService
-from decorators.decorators import role_required
-from dto.requests.requests import AcceptRideRequestDTO, DeclineRideRequestDTO
-from dto.responses.responses import (
+from Backend.driver_routes.driver_service import DriverService
+from Backend.utils.decorators import role_required
+from driver_routes.dto.requests.requests import AcceptRideRequestDTO, DeclineRideRequestDTO
+from driver_routes.dto.responses.responses import (
     DashboardResponseDTO, DisplayRidesResponseDTO, AcceptRideResponseDTO, DeclineRideResponseDTO
 )
 

@@ -8,7 +8,7 @@ from flask import request, jsonify
 from flask_login import logout_user, login_required
 from flask_smorest import Blueprint
 from admin_routes.admin_service import AdminService
-from decorators.decorators import role_required
+from Backend.utils.decorators import role_required
 from admin_routes.dto.requests import SendLinkRequestDTO
 from admin_routes.dto.responses import SendLinkResponseDTO
 
