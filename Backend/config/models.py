@@ -40,7 +40,7 @@ def create_app():
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
     app.config['PAYPAL_CLIENT_ID'] = os.getenv('PAYPAL_CLIENT_ID')
     app.config['PAYPAL_CLIENT_SECRET'] = os.getenv('PAYPAL_CLIENT_SECRET')
-    app.config['PAYPAL_API_BASE'] = 'https://api.sandbox.paypal.com
+    app.config['PAYPAL_API_BASE'] = 'https://api.sandbox.paypal.com'
     
     return app
 

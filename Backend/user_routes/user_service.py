@@ -31,11 +31,12 @@ gmaps = googlemaps.Client(key=API_KEY)
 user_repository = UsersRepository()
 
 class UsersService:
+    def __init__(self):
+        self.user_repository = UsersRepository()
+        self.user_mapper = UsersMapper()
 
-    @staticmethod
-    def calculate_distance(departure, destination):
+    def calculate_distance(self, departure, destination):
         try:
-            # Make a Distance Matrix request to calculate distance
             matrix = gmaps.distance_matrix(departure, destination, mode='driving', units='metric')
             if matrix['status'] == 'OK':
                 distance_in_meters = matrix['rows'][0]['elements'][0]['distance']['value']
@@ -48,13 +49,12 @@ class UsersService:
             print("Error calculating distance:", e)
             return None
 
-    @staticmethod
-    def calculate_price(departure, destination):
+    def calculate_price(self, departure, destination):
         try:
-            distance = UsersService.calculate_distance(departure, destination)
+            distance = self.calculate_distance(departure, destination)
             if distance is not None:
-                base_fare = 5.0  # Base fare in dollars
-                per_km_rate = 1.5  # Rate per kilometer
+                base_fare = 5.0
+                per_km_rate = 1.5
                 price = base_fare + (distance * per_km_rate)
                 return round(price, 2)
             else:
@@ -63,8 +63,7 @@ class UsersService:
             print("Error calculating price:", e)
             return None
 
-    @staticmethod
-    def get_paypal_access_token():
+    def get_paypal_access_token(self):
         response = requests.post(
             f"{os.getenv('PAYPAL_API_BASE')}/v1/oauth2/token",
             headers={
@@ -76,102 +75,94 @@ class UsersService:
         )
         return response.json()['access_token']
 
-    @staticmethod
-    def login(data):
+    def login(self, data):
         try:
             validated_data = LoginRequestDTO().load(data)
         except ValidationError as err:
             return {'error': err.messages}
         
-        user = user_repository.get_user_by_username(validated_data['username'])
+        user = self.user_repository.get_user_by_username(validated_data['username'])
         if user and user.check_password(validated_data['password']):
             login_user(user, remember=validated_data.get('remember_me', False))
             next_page = validated_data.get('next')
             if not next_page or url_parse(next_page).netloc != '':
-                next_page = url_for(f'{user.role}s.dashboard')
+                next_page = url_for(f'{user["role"]}s.dashboard')
             response_data = {'message': 'Login successful', 'next_page': next_page}
             return LoginResponseDTO().dump(response_data)
         return {'error': 'Invalid username or password'}
-    
-    @staticmethod
-    def order_ride(data, user_id):
+
+    def order_ride(self, data, user_id):
         try:
             validated_data = OrderRideRequestDTO().load(data)
         except ValidationError as err:
             return {'error': err.messages}
 
-        price = UsersService.calculate_price(validated_data['departure'], validated_data['destination'])
+        price = self.calculate_price(validated_data['departure'], validated_data['destination'])
         if not isinstance(price, (int, float)):
             return {'error': 'Calculated price is not a valid number'}
 
-        order_data = UsersMapper.map_to_order_ride(validated_data, user_id, price)
-        UsersRepository.add_order(order_data)
+        order_data = self.user_mapper.map_to_order_ride(validated_data, user_id, price)
+        self.user_repository.add_order(order_data)
         response_data = {
             'message': 'Your ride is on the way',
-            'ride_id': order_data.id,
+            'ride_id': order_data['id'],
             'price': price
         }
         return OrderRideResponseDTO().dump(response_data)
-    
-    @staticmethod
-    def order_confirmation(ride_id, user_id):
-        ride_order = UsersRepository.get_ride_order(ride_id)
-        if ride_order.user_id != user_id:
+
+    def order_confirmation(self, ride_id, user_id):
+        ride_order = self.user_repository.get_ride_order(ride_id)
+        if ride_order['user_id'] != user_id:
             return {'error': 'Forbidden'}
         
-        response_data = UsersMapper.map_to_order_confirmation(ride_order)
+        response_data = self.user_mapper.map_to_order_confirmation(ride_order)
         return OrderConfirmationResponseDTO().dump(response_data)
 
-    @staticmethod
-    def order_status(user_id):
-        rides = UsersRepository.get_ride_orders_by_user(user_id)
-        response_data = UsersMapper.map_to_order_status(rides)
+    def order_status(self, user_id):
+        rides = self.user_repository.get_ride_orders_by_user(user_id)
+        response_data = self.user_mapper.map_to_order_status(rides)
         return OrderStatusResponseDTO(many=True).dump(response_data)
 
-    @staticmethod
-    def calculate_price(data):
+    def calculate_price_service(self, data):
         try:
             validated_data = CalculatePriceRequestDTO().load(data)
         except ValidationError as err:
             return {'error': err.messages}
 
-        price = UsersService.calculate_price(validated_data['departure'], validated_data['destination'])
+        price = self.calculate_price(validated_data['departure'], validated_data['destination'])
         response_data = {'price': price}
         return CalculatePriceResponseDTO().dump(response_data)
 
-    @staticmethod
-    def order_status_detail(ride_id, user_id):
-        ride_order = UsersRepository.get_ride_order(ride_id)
-        if ride_order is None or ride_order.user_id != user_id:
+    def order_status_detail(self, ride_id, user_id):
+        ride_order = self.user_repository.get_ride_order(ride_id)
+        if ride_order is None or ride_order['user_id'] != user_id:
             return {'error': 'Not found'}
         
-        return {'ride_status': ride_order.status}
+        return {'ride_status': ride_order['status']}
 
-    @staticmethod
-    def pay(ride_id, user_id):
-        ride_order = UsersRepository.get_ride_order(ride_id)
-        if ride_order.user_id != user_id:
+    def pay(self, ride_id, user_id):
+        ride_order = self.user_repository.get_ride_order(ride_id)
+        if ride_order['user_id'] != user_id:
             return {'error': 'Forbidden'}
         
         response_data = {
             'ride_id': ride_id,
-            'name': ride_order.name,
-            'departure': ride_order.departure,
-            'destination': ride_order.destination,
-            'time': ride_order.time,
+            'name': ride_order['name'],
+            'departure': ride_order['departure'],
+            'destination': ride_order['destination'],
+            'time': ride_order['time'],
             'client_id': os.getenv('PAYPAL_CLIENT_ID')
         }
         return PayResponseDTO().dump(response_data)
 
-    @staticmethod
-    def create_payment(ride_id, form_data):
+    def create_payment(self, ride_id, form_data):
         try:
             validated_data = CreatePaymentRequestDTO().load(form_data)
         except ValidationError as err:
             return {'error': err.messages}
 
-        access_token = UsersService.get_paypal_access_token()
-        total_amount = UsersService.calculate_price(validated_data['departure'], validated_data['destination'])
+        access_token = self.get_paypal_access_token()
+        total_amount = self.calculate_price(validated_data['departure'], validated_data['destination'])
 
         payment_data = {
             "intent": "sale",
@@ -207,14 +198,13 @@ class UsersService:
                 return CreatePaymentResponseDTO().dump(response_data)
         return {'error': 'Error creating payment'}
 
-    @staticmethod
-    def execute_payment(ride_id, args):
+    def execute_payment(self, ride_id, args):
         try:
             validated_data = ExecutePaymentRequestDTO().load(args)
         except ValidationError as err:
             return {'error': err.messages}
 
-        access_token = UsersService.get_paypal_access_token()
+        access_token = self.get_paypal_access_token()
 
         response = requests.post(
             f"{os.getenv('PAYPAL_API_BASE')}/v1/payments/payment/{validated_data['paymentId']}/execute",

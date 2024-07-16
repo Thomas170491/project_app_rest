@@ -1,7 +1,12 @@
-from repositories.admin_repository import AdminRepository
-from mappers.admin_mapper import AdminMapper
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+
+from admin_repository import AdminRepository
+from admin_mapper import AdminMapper
 from flask_jwt_extended import create_access_token
-from config.models import generate_deeplink, send_invitation_email
+from Backend.config.models import generate_deeplink, send_invitation_email
 
 class AdminService:
     def __init__(self):
