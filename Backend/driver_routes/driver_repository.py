@@ -1,56 +1,30 @@
+import os 
+import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from flask import request, jsonify
-from flask_login import login_required, current_user
-from flask_smorest import Blueprint
-from driver_service import DriverService
-from decorators.decorators import role_required
-from dto.requests.driver_requests import AcceptRideRequestDTO, DeclineRideRequestDTO
-from dto.responses.driver_responses import (
-    DashboardResponseDTO, DisplayRidesResponseDTO, AcceptRideResponseDTO, DeclineRideResponseDTO
-)
+from config.models import db
 
-drivers_blp = Blueprint("drivers", "drivers", url_prefix="/drivers", description="drivers routes")
+class DriverRepository:
+    def __init__(self):
+        self.ride_orders_ref = db.collection('ride_orders')
 
-driver_service = DriverService()
+    def get_pending_rides(self):
+        query = self.ride_orders_ref.where('status', '==', 'pending').stream()
+        rides = []
+        for doc in query:
+            ride = doc.to_dict()
+            ride['id'] = doc.id
+            rides.append(ride)
+        return rides
 
-@drivers_blp.route("/dashboard", methods=["GET"])
-@login_required
-@role_required("driver")
-def dashboard():
-    response = driver_service.get_dashboard()
-    return DashboardResponseDTO().dump(response), 200
+    def get_ride_order(self, ride_id):
+        ride_order_ref = self.ride_orders_ref.document(str(ride_id))
+        ride_order = ride_order_ref.get()
+        if ride_order.exists:
+            return ride_order.to_dict()
+        return None
 
-@drivers_blp.route("/display_rides", methods=["GET"])
-@login_required
-@role_required('driver')
-def display_rides():
-    response = driver_service.display_rides()
-    return jsonify(DisplayRidesResponseDTO(many=True).dump(response)), 200
-
-@drivers_blp.route("/accept_ride/<int:ride_id>", methods=['POST'])
-@login_required
-@role_required('driver')
-def accept_ride(ride_id):
-    driver_id = current_user.id
-    response = driver_service.accept_ride(ride_id, driver_id)
-    if 'error' in response:
-        return jsonify({'error': response['error']}), 400
-    return AcceptRideResponseDTO().dump(response), 200
-
-@drivers_blp.route("/decline_ride/<int:ride_id>", methods=['POST'])
-@login_required
-@role_required('driver')
-def decline_ride(ride_id):
-    driver_id = current_user.id
-    response = driver_service.decline_ride(ride_id, driver_id)
-    if 'error' in response:
-        return jsonify({'error': response['error']}), 400
-    return DeclineRideResponseDTO().dump(response), 200
-
-@drivers_blp.route("/logout", methods=['POST'])
-@login_required
-@role_required("driver")
-def logout():
-    logout_user()
-    return jsonify({'message': 'Logged out successfully'}), 200
+    def update_ride_order(self, ride_id, update_data):
+        ride_order_ref = self.ride_orders_ref.document(str(ride_id))
+        ride_order_ref.update(update_data)

@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from firebase_admin import credentials,firestore,initialize_app
+from firebase_admin import credentials,firestore,initialize_app,_apps
 from flask_login import LoginManager, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Mail, Message
@@ -8,15 +8,22 @@ from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
+
+
 # Load environment variables
 load_dotenv()
 
 
 # Initialize Firebase Admin SDK with service account
-firebase_key_file = os.getenv('FIREBASE_KEY_FILE')
-cred = credentials.Certificate(firebase_key_file)
-initialize_app(cred)
 
+
+def get_firestore_client():
+    if not _apps:
+        cred = credentials.Certificate(os.getenv('FIREBASE_KEY_FILE'))
+        initialize_app(cred)
+    return firestore.client()
+
+db = get_firestore_client()
 
 # Initialize Firestore
 db = firestore.client()
