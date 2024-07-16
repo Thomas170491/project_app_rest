@@ -9,6 +9,7 @@ from Backend.forms import RegistrationForm
 from Backend.admin_routes.admin_controller import admins # Import admin blueprint
 from Backend.user_routes.user_controller import users_blp  # Import user blueprint
 from Backend.driver_routes.driver_controller import drivers  # Import driver blueprint
+from firebase_admin import get_app
 
 
 
@@ -30,6 +31,8 @@ api.register_blueprint(admins, url_prefix='/admins')  # Register admin routes un
 api.register_blueprint(users_blp, url_prefix='/users')  # Register user routes under /users
 api.register_blueprint(drivers, url_prefix='/drivers')  # Register driver routes under /drivers
 
+
+get_app()
 @app.route("/")
 def index():
     return jsonify({'message': 'Welcome to the API'})

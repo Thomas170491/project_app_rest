@@ -7,10 +7,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from flask import request, jsonify
 from flask_login import logout_user, login_required
 from flask_smorest import Blueprint
-from admin_service import AdminService
+from admin_routes.admin_service import AdminService
 from decorators.decorators import role_required
-from dto.requests import SendLinkRequestDTO
-from dto.responses import SendLinkResponseDTO
+from admin_routes.dto.requests import SendLinkRequestDTO
+from admin_routes.dto.responses import SendLinkResponseDTO
 
 admins = Blueprint("admins", "admins", url_prefix="/admins", description="admin routes")
 

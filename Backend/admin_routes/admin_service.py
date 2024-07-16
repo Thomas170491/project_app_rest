@@ -3,8 +3,8 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
-from admin_repository import AdminRepository
-from admin_mapper import AdminMapper
+from Backend.admin_routes.admin_repository import AdminRepository
+from Backend.admin_routes.admin_mapper import AdminMapper
 from flask_jwt_extended import create_access_token
 from Backend.config.models import generate_deeplink, send_invitation_email
 

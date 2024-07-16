@@ -1,8 +1,8 @@
 import os
 import requests
 from datetime import datetime
-from repositories.driver_repository import DriverRepository
-from mappers.driver_mapper import DriverMapper
+from driver_repository import DriverRepository
+from driver_mapper import DriverMapper
 
 class DriverService:
     def __init__(self):
