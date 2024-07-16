@@ -64,13 +64,14 @@ cors = CORS(app)
 
 
 class User(UserMixin):
-    def __init__(self, username, name, surname, email, password, role):
+    def __init__(self, username, name, surname, email, password, role, id):
         self.username = username
         self.name = name
         self.surname = surname
         self.email = email
         self.password_hash = generate_password_hash(password)
         self.role = role
+        self.id = id
 
     def to_dict(self):
         return {
@@ -80,6 +81,7 @@ class User(UserMixin):
             'email': self.email,
             'password_hash': self.password_hash,
             'role': self.role 
+
             }
 
     def set_password(self, password):
@@ -92,7 +94,8 @@ class User(UserMixin):
         return f'<User {self.id}>'
 
 class RideOrder:
-    def __init__(self, name, departure, destination, time, price, user_id=None):
+    def __init__(self,id, name, departure, destination, time, price, user_id=None):
+        self.id = id 
         self.name = name
         self.departure = departure
         self.destination = destination
@@ -194,10 +197,27 @@ class Vehicle:
     def __repr__(self):
         return f'<Vehicle {self.id}>'
 
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    # Retrieve user document from Firestore
+    user_ref = db.collection('users').document(user_id)
+    user_doc = user_ref.get()
 
+    if user_doc.exists:
+        user_data = user_doc.to_dict()
+
+        # Create User instance with required attributes
+        user = User(
+            id = user_id,
+            username=user_data.get('username'),
+            email=user_data.get('email'),
+            password= user_data.get('password'),
+            role= user_data.get('role'),
+            name = user_data.get('name'),
+            surname= user_data.get('surname')
+        )
+        return user
 
 
 

@@ -9,7 +9,7 @@ class OrderRideRequestDTO(Schema):
     name = fields.String(required=True, validate=validate.Length(min=1))
     departure = fields.String(required=True, validate=validate.Length(min=1))
     destination = fields.String(required=True, validate=validate.Length(min=1))
-    time = fields.DateTime(required=True)
+    time = fields.String(required=True)
 
 class CalculatePriceRequestDTO(Schema):
     departure = fields.String(required=True, validate=validate.Length(min=1))
