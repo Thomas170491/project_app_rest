@@ -27,7 +27,16 @@ users_blp = Blueprint("users", "users", url_prefix="/users", description="users 
 @users_blp.response(status_code=200, schema=LoginResponseDTO)
 def user_login(data):
     if current_user.is_authenticated:
-        return redirect(url_for('users.dashboard'))
+        role_dashboard_map = {
+            'admin': 'admin_dashboard',
+            'user': 'user_dashboard',
+            'driver': 'driver_dashboard'
+        }
+        role = current_user.role
+        if role in role_dashboard_map:
+            return redirect(url_for(f'{role_dashboard_map[role]}'))
+        else:
+            return jsonify({'error': 'Invalid role'}), 400
 
     result = UsersService.login(data)
     if 'error' in result:

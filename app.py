@@ -6,7 +6,7 @@ from Backend.config.models import app, db, InvitationEmails,User
 from flask_jwt_extended import decode_token
 from Backend.forms import RegistrationForm
 
-from Backend.admin_routes.admin_controller import admins  # Import admin blueprint
+from Backend.admin_routes.admin_controller import admins # Import admin blueprint
 from Backend.user_routes.user_controller import users_blp  # Import user blueprint
 from Backend.driver_routes.driver_controller import drivers  # Import driver blueprint
 
