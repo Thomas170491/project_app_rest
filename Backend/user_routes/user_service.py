@@ -107,7 +107,7 @@ class UsersService:
             next_page = url_for(f'{user["role"]}s.dashboard')
 
         # Prepare response data
-        response_data = {'message': 'Login successful', 'next_page': next_page}
+        response_data = {'message': 'Login successful', 'next_page': next_page} 
         
         return LoginResponseDTO().dump(response_data)
     
@@ -238,9 +238,13 @@ class UsersService:
         )
 
         payment = response.json()
-        if payment['state'] == 'approved':
-            response_data = {'message': 'Payment successful'}
-            return ExecutePaymentResponseDTO().dump(response_data)
-        else:
-            response_data = {'error': 'Payment failed. Please try again.'}
-            return response_data
+        try:
+            if payment['state'] == 'approved':
+                response_data = {'message': 'Payment successful'}
+                return ExecutePaymentResponseDTO().dump(response_data)
+            else:
+                response_data = {'error': 'Payment failed. Please try again.'}
+                return response_data
+        except KeyError:
+            # Handle the case where 'state' key is not found in payment response
+            return {'error': 'Unexpected response from PayPal API'}
