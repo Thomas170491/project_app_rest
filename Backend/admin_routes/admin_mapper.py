@@ -13,4 +13,4 @@ class AdminMapper:
         ).to_dict()
 
     def map_to_user_list(self, users):
-        return [user.to_dict() for user in users]
+        return [user for user in users]

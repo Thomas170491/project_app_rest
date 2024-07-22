@@ -2,19 +2,22 @@ import React, { useState, createContext } from 'react'
 
 export const UserContext = createContext()
 
+
 export const UserProvider = ({ children }) => {
     const[user, setUser] = useState({
-        isAuthenticated : true,
-        role : 'admin'
+        isAuthenticated : false,
+        role : ''
     })
-    const login = (role) => {
+    const login = (userData) => {
         setUser({
-            isAuthenticated : true, role
+            isAuthenticated : true, 
+            ...userData
         })
     }
     const logout = () =>{
         setUser({
-            isAuthenticated : false, role : ' '
+            isAuthenticated : false, 
+            role : ''
         })
     }
     return (
@@ -23,3 +26,4 @@ export const UserProvider = ({ children }) => {
         </UserContext.Provider>
     )
  }
+

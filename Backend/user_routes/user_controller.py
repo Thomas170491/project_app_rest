@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from flask_smorest import Blueprint
 from flask import jsonify, redirect, url_for,request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_login import current_user, login_required, logout_user
 from Backend.utils.decorators import role_required
 from marshmallow.exceptions import ValidationError
@@ -25,6 +26,11 @@ from user_routes.user_service import UsersService
 users_blp = Blueprint("users", "users", url_prefix="/users", description="users routes")
 
 user_service = UsersService()
+
+@users_blp.route('/login', methods=['GET'])
+def login_form():
+    return jsonify({"message": "Please submit your login credentials via POST request to this endpoint."})
+
 
 @users_blp.route('/login', methods=['POST'])
 @users_blp.arguments(schema=LoginRequestDTO, location='json')
@@ -50,9 +56,12 @@ def user_login(data):
 @users_blp.route('/dashboard', methods=['GET'])
 @login_required
 @role_required("user")
+@jwt_required
 @users_blp.response(status_code=200, schema=LoginResponseDTO)
 def dashboard():
-    return {'message': 'Welcome to the user dashboard'}
+    current_user = get_jwt_identity()
+    return {'message': f'Welcome {current_user}'}
+    
 
 @users_blp.route('/order_ride', methods=['POST'])
 @login_required
