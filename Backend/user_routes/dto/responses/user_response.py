@@ -3,6 +3,8 @@ from marshmallow import Schema, fields
 class LoginResponseDTO(Schema):
     message = fields.String(required=True)
     next_page = fields.String(required=True)
+    status = fields.Int(required = True)
+  
    
 
 class OrderRideResponseDTO(Schema):

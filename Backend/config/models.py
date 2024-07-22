@@ -115,23 +115,7 @@ class RideOrder:
             'user_id': self.user_id
         }
 
-    def save(self):
-        ride_order_ref = db.collection('ride_orders').document()
-        ride_order_ref.set(self.to_dict())
-        self.id = ride_order_ref.id  # Store the document ID
 
-    @staticmethod
-    def get_by_id(order_id):
-        ride_order_ref = db.collection('ride_orders').document(order_id)
-        ride_order_data = ride_order_ref.get()
-        if ride_order_data.exists:
-            return RideOrder(**ride_order_data.to_dict())
-        return None
-
-    @staticmethod
-    def get_all():
-        ride_orders_ref = db.collection('ride_orders')
-        return [RideOrder(**ro.to_dict()) for ro in ride_orders_ref.stream()]
 
     def __repr__(self):
         return f'<RideOrder {self.id}>'
