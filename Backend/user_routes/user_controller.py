@@ -7,7 +7,7 @@ from flask_smorest import Blueprint
 from flask import jsonify, redirect, url_for,request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_login import current_user, login_required, logout_user
-from Backend.utils.decorators import role_required
+from utils.decorators import role_required
 from marshmallow.exceptions import ValidationError
 import requests
 from user_routes.dto.requests.user_request import (
@@ -23,18 +23,18 @@ from user_routes.dto.responses.user_response import (
 
 from user_routes.user_service import UsersService
 
-users_blp = Blueprint("users", "users", url_prefix="/users", description="users routes")
+users = Blueprint("users", "users", url_prefix="/users", description="users routes")
 
 user_service = UsersService()
 
-@users_blp.route('/login', methods=['GET'])
+@users.route('/login', methods=['GET'])
 def login_form():
     return jsonify({"message": "Please submit your login credentials via POST request to this endpoint."})
 
 
-@users_blp.route('/login', methods=['POST'])
-@users_blp.arguments(schema=LoginRequestDTO, location='json')
-@users_blp.response(status_code=200, schema=LoginResponseDTO)
+@users.route('/login', methods=['POST'])
+@users.arguments(schema=LoginRequestDTO, location='json')
+@users.response(status_code=200, schema=LoginResponseDTO)
 def user_login(data):
     if current_user.is_authenticated:
         role_dashboard_map = {
@@ -53,31 +53,31 @@ def user_login(data):
         return jsonify(result), 401
     return jsonify(result), 200
 
-@users_blp.route('/dashboard', methods=['GET'])
+@users.route('/dashboard', methods=['GET'])
 @login_required
 @role_required("user")
 @jwt_required
-@users_blp.response(status_code=200, schema=LoginResponseDTO)
+@users.response(status_code=200, schema=LoginResponseDTO)
 def dashboard():
     current_user = get_jwt_identity()
     return {'message': f'Welcome {current_user}'}
     
 
-@users_blp.route('/order_ride', methods=['POST'])
+@users.route('/order_ride', methods=['POST'])
 @login_required
 @role_required("user")
-@users_blp.arguments(schema=OrderRideRequestDTO, location='json')
-@users_blp.response(status_code=201, schema=OrderRideResponseDTO)
+@users.arguments(schema=OrderRideRequestDTO, location='json')
+@users.response(status_code=201, schema=OrderRideResponseDTO)
 def order_ride(data):
     result = user_service.order_ride(data, current_user.id)
     if 'error' in result:
         return jsonify(result), 400
     return jsonify(result), 201
 
-@users_blp.route('/order_confirmation/<ride_id>', methods=['GET'])
+@users.route('/order_confirmation/<ride_id>', methods=['GET'])
 @login_required
 @role_required('user')
-@users_blp.response(status_code=200, schema=OrderConfirmationResponseDTO)
+@users.response(status_code=200, schema=OrderConfirmationResponseDTO)
 def order_confirmation(ride_id):
     result = user_service.order_confirmation(ride_id, current_user.id)
     if 'error' in result:
@@ -85,43 +85,43 @@ def order_confirmation(ride_id):
     return jsonify(result), 200
 
 
-@users_blp.route('/calculate_price', methods=['POST'])
+@users.route('/calculate_price', methods=['POST'])
 @login_required
 @role_required("user")
-@users_blp.arguments(schema=CalculatePriceRequestDTO, location='json')
-@users_blp.response(status_code=200, schema=CalculatePriceResponseDTO)
+@users.arguments(schema=CalculatePriceRequestDTO, location='json')
+@users.response(status_code=200, schema=CalculatePriceResponseDTO)
 def calculate_price(data):
     result = user_service.calculate_price(data)
     if 'error' in result:
         return jsonify(result), 400
     return jsonify(result), 200
 
-@users_blp.route('/order_status/<ride_id>', methods=['GET'])
+@users.route('/order_status/<ride_id>', methods=['GET'])
 @login_required
 @role_required('user')
 #@users_blp.arguments(Or)
-@users_blp.response(status_code=200, schema=OrderStatusResponseDTO)
+@users.response(status_code=200, schema=OrderStatusResponseDTO)
 def order_status_detail(ride_id):
     result = user_service.order_status_detail(ride_id, current_user.id)
     if 'error' in result:
         return jsonify(result), 404
     return jsonify(result), 200
 
-@users_blp.route('/pay/<ride_id>', methods=['GET'])
+@users.route('/pay/<ride_id>', methods=['GET'])
 @login_required
 @role_required('user')
-@users_blp.response(status_code=200, schema=PayResponseDTO)
+@users.response(status_code=200, schema=PayResponseDTO)
 def pay(ride_id):
     result = user_service.pay(ride_id, current_user.id)
     if 'error' in result:
         return jsonify(result), 403
     return jsonify(result), 200
 
-@users_blp.route('/create_payment/<ride_id>', methods=['POST'])
+@users.route('/create_payment/<ride_id>', methods=['POST'])
 @login_required
 @role_required('user')
-@users_blp.arguments(schema=CreatePaymentRequestDTO, location='json')
-@users_blp.response(status_code=200, schema=CreatePaymentResponseDTO)
+@users.arguments(schema=CreatePaymentRequestDTO, location='json')
+@users.response(status_code=200, schema=CreatePaymentResponseDTO)
 def create_payment(ride_id):
     # Extract JSON data from request
     data = request.json
@@ -169,10 +169,10 @@ def execute_payment(self, ride_id, args):
         return {'error': 'Unexpected response from PayPal API'}
 
 
-@users_blp.route("/logout", methods=['POST'])
+@users.route("/logout", methods=['POST'])
 @login_required
 @role_required("user")
-@users_blp.response(status_code=200, schema=LoginResponseDTO)
+@users.response(status_code=200, schema=LoginResponseDTO)
 def logout():
     logout_user()
     return {'message': 'Successfully logged out'}

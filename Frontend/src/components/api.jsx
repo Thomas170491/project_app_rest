@@ -12,8 +12,17 @@ export const loginUser = async (username, password) => {
 
 export const getUserDashboard = async () => {
   const token = localStorage.getItem('acces_token')
-  const response = await api.get('/users/dashboard');
-  return response.data;
+  try {
+    const response = await api.get(`/users/dashboard`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return response.data;  // Handle the response data accordingly
+} catch (error) {
+    console.error('Failed to fetch dashboard data:', error);
+    throw error;  // Rethrow error to be handled in your component
+}
 };
 export const getDriverDashboard = async () => {
     
