@@ -11,6 +11,7 @@ import AcceptRide from './components/DriverAcceptRide';
 import DeclineRide from './components/DriverDeclineRide';
 import { UserProvider } from './components/UserContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import './App.css'
 
 const App = () => {
   return (

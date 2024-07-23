@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react'
 import { UserContext } from './UserContext'; // Assuming you have a UserProvider that provides the current user context
 import { Container, Row, Col, Button, ListGroup, ListGroupItem, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAdminDashboard } from './api';
+import { getAdminDashboard } from './axiosinstance';
 
 
 const AdminDashboard = () => {

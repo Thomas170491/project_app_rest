@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from './UserContext';
-import { getUserDashboard } from './api';
+import { getUserDashboard } from './axiosinstance';
 
 const UserDashboard = () => {
   const { user } = useContext(UserContext);
