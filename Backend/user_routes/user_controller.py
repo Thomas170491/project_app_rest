@@ -1,178 +1,89 @@
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname((os.path.realpath(__file__))))))
 
+from Backend.utils.decorators import jwt_required_with_role
 from flask_smorest import Blueprint
-from flask import jsonify, redirect, url_for,request
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_login import current_user, login_required, logout_user
-from utils.decorators import role_required
+from flask import jsonify, redirect, url_for, request, make_response
 from marshmallow.exceptions import ValidationError
-import requests
-from user_routes.dto.requests.user_request import (
+from Backend.user_routes.dto.requests.user_request import (
     LoginRequestDTO, OrderRideRequestDTO, CalculatePriceRequestDTO, 
     CreatePaymentRequestDTO, ExecutePaymentRequestDTO
 )
-
-from user_routes.dto.responses.user_response import (
+from Backend.user_routes.dto.responses.user_response import (
     LoginResponseDTO, OrderRideResponseDTO, OrderConfirmationResponseDTO, 
     OrderStatusResponseDTO, CalculatePriceResponseDTO, PayResponseDTO, 
     CreatePaymentResponseDTO, ExecutePaymentResponseDTO
 )
-
-from user_routes.user_service import UsersService
+from Backend.user_routes.user_service import UsersService
 
 users = Blueprint("users", "users", url_prefix="/users", description="users routes")
 
 user_service = UsersService()
 
+@users.route("/")
+def index():
+    return "Hello from users"
+
 @users.route('/login', methods=['GET'])
 def login_form():
     return jsonify({"message": "Please submit your login credentials via POST request to this endpoint."})
 
-
 @users.route('/login', methods=['POST'])
 @users.arguments(schema=LoginRequestDTO, location='json')
-@users.response(status_code=200, schema=LoginResponseDTO)
 def user_login(data):
-    if current_user.is_authenticated:
-        role_dashboard_map = {
-            'admin': 'admin.dashboard',
-            'user': 'users.dashboard',
-            'driver': 'drivers.dashboard'
-        }
-        role = current_user.role
-        if role in role_dashboard_map:
-            return redirect(url_for (role_dashboard_map[role]))
-        else:
-            return jsonify({'error': 'Invalid role'}), 400
-
-    result = user_service.login(data)
-    if 'error' in result:
-        return jsonify(result), 401
-    return jsonify(result), 200
+    result, status_code = user_service.login(data)
+    return make_response(jsonify(result), status_code)
 
 @users.route('/dashboard', methods=['GET'])
-@login_required
-@role_required("user")
-@jwt_required
-@users.response(status_code=200, schema=LoginResponseDTO)
+@jwt_required_with_role('user')
 def dashboard():
-    current_user = get_jwt_identity()
-    return {'message': f'Welcome {current_user}'}
-    
+    current_user = request.user
+    print(current_user)
+    return jsonify({'message': f'Welcome {current_user["username"]}'}), 200
 
 @users.route('/order_ride', methods=['POST'])
-@login_required
-@role_required("user")
+@jwt_required_with_role('user')
 @users.arguments(schema=OrderRideRequestDTO, location='json')
-@users.response(status_code=201, schema=OrderRideResponseDTO)
 def order_ride(data):
-    result = user_service.order_ride(data, current_user.id)
-    if 'error' in result:
-        return jsonify(result), 400
-    return jsonify(result), 201
+    result, status_code = user_service.order_ride(data, request.user['id'])
+    return make_response(jsonify(result), status_code)
 
 @users.route('/order_confirmation/<ride_id>', methods=['GET'])
-@login_required
-@role_required('user')
-@users.response(status_code=200, schema=OrderConfirmationResponseDTO)
+@jwt_required_with_role('user')
 def order_confirmation(ride_id):
-    result = user_service.order_confirmation(ride_id, current_user.id)
-    if 'error' in result:
-        return jsonify(result), 403
-    return jsonify(result), 200
-
+    result, status_code = user_service.order_confirmation(ride_id, request.user['id'])
+    return make_response(jsonify(result), status_code)
 
 @users.route('/calculate_price', methods=['POST'])
-@login_required
-@role_required("user")
+@jwt_required_with_role('user')
 @users.arguments(schema=CalculatePriceRequestDTO, location='json')
-@users.response(status_code=200, schema=CalculatePriceResponseDTO)
 def calculate_price(data):
-    result = user_service.calculate_price(data)
-    if 'error' in result:
-        return jsonify(result), 400
-    return jsonify(result), 200
+    result, status_code = user_service.calculate_price(data)
+    return make_response(jsonify(result), status_code)
 
 @users.route('/order_status/<ride_id>', methods=['GET'])
-@login_required
-@role_required('user')
-#@users_blp.arguments(Or)
-@users.response(status_code=200, schema=OrderStatusResponseDTO)
+@jwt_required_with_role('user')
 def order_status_detail(ride_id):
-    result = user_service.order_status_detail(ride_id, current_user.id)
-    if 'error' in result:
-        return jsonify(result), 404
-    return jsonify(result), 200
+    result, status_code = user_service.order_status_detail(ride_id, request.user['id'])
+    return make_response(jsonify(result), status_code)
 
 @users.route('/pay/<ride_id>', methods=['GET'])
-@login_required
-@role_required('user')
-@users.response(status_code=200, schema=PayResponseDTO)
+@jwt_required_with_role('user')
 def pay(ride_id):
-    result = user_service.pay(ride_id, current_user.id)
-    if 'error' in result:
-        return jsonify(result), 403
-    return jsonify(result), 200
+    result, status_code = user_service.pay(ride_id, request.user['id'])
+    return make_response(jsonify(result), status_code)
 
 @users.route('/create_payment/<ride_id>', methods=['POST'])
-@login_required
-@role_required('user')
+@jwt_required_with_role('user')
 @users.arguments(schema=CreatePaymentRequestDTO, location='json')
-@users.response(status_code=200, schema=CreatePaymentResponseDTO)
 def create_payment(ride_id):
-    # Extract JSON data from request
     data = request.json
-    
-    # Validate JSON data using schema if needed
-    # Example: validation_result = CreatePaymentRequestDTO.validate(data)
-    # if validation_result.errors:
-    #     return jsonify(validation_result.errors), 400
-    
-    # Call your service function with both ride_id and data
-    result = user_service.create_payment(ride_id, data)
-    
-    # Handle the result
-    if 'error' in result:
-        return jsonify(result), 400
-    return jsonify(result), 200
-
-def execute_payment(self, ride_id, args):
-    try:
-        validated_data = ExecutePaymentRequestDTO().load(args)
-    except ValidationError as err:
-        return {'error': err.messages}
-
-    access_token = self.get_paypal_access_token()
-
-    response = requests.post(
-        f"{os.getenv('PAYPAL_API_BASE')}/v1/payments/payment/{validated_data['paymentId']}/execute",
-        json={"payer_id": validated_data['PayerID']},
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}",
-        }
-    )
-
-    payment = response.json()
-    try:
-        if payment['state'] == 'approved':
-            response_data = {'message': 'Payment successful'}
-            return ExecutePaymentResponseDTO().dump(response_data)
-        else:
-            response_data = {'error': 'Payment failed. Please try again.'}
-            return response_data
-    except KeyError:
-        # Handle the case where 'state' key is not found in payment response
-        return {'error': 'Unexpected response from PayPal API'}
-
+    result, status_code = user_service.create_payment(ride_id, data)
+    return make_response(jsonify(result), status_code)
 
 @users.route("/logout", methods=['POST'])
-@login_required
-@role_required("user")
-@users.response(status_code=200, schema=LoginResponseDTO)
+@jwt_required_with_role('user')
 def logout():
-    logout_user()
-    return {'message': 'Successfully logged out'}
+    return jsonify({'message': 'Successfully logged out'}), 200

@@ -1,5 +1,8 @@
 import os
 import sys
+
+sys.path.append(os.path.dirname(os.path.dirname((os.path.realpath(__file__)))))
+
 import requests
 import googlemaps
 from flask import url_for
@@ -14,6 +17,7 @@ from user_routes.dto.requests.user_request import (
     LoginRequestDTO, OrderRideRequestDTO, CalculatePriceRequestDTO, 
     CreatePaymentRequestDTO, ExecutePaymentRequestDTO
 )
+from Backend.utils.jwt_utils import encode_jwt 
 from user_routes.dto.responses.user_response import (
     LoginResponseDTO, OrderRideResponseDTO, OrderConfirmationResponseDTO, 
     OrderStatusResponseDTO, CalculatePriceResponseDTO, PayResponseDTO, 
@@ -79,35 +83,30 @@ class UsersService:
         except requests.RequestException as e:
             print("Error getting PayPal access token:", e)
             return None
-
+        
     def login(self, data):
         try:
             validated_data = LoginRequestDTO().load(data)
         except ValidationError as err:
-            return {'error': err.messages}
+            return {'error': err.messages}, 400
 
         username = validated_data['username']
         password = validated_data['password']
 
         user = self.user_repository.get_user_by_username(username)
-        if not user:
-            return {'error': 'Invalid username or password'}
+        if not user or not check_password_hash(user['password_hash'], password):
+            return {'error': 'Invalid username or password'}, 401
 
-        if not check_password_hash(user['password_hash'], password):
-            return {'error': 'Invalid username or password'}
-
-        user_ref = self.user_repository.get_user_id_by_username(username)
-        user_load = load_user(user_ref)
-        login_user(user_load, remember=validated_data.get('remember_me', False))
+        token = encode_jwt({'id': user['id'], 'username': username, 'role': user['role']})
         
-        access_token = create_access_token(identity=user['username'])
-
         next_page = validated_data.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for(f'{user["role"]}s.dashboard')
 
-        response_data = {'message': 'Login successful', 'next_page': next_page, 'status': 200, 'acces_token' : access_token}
-        return LoginResponseDTO().dump(response_data)
+
+        response_data = {'message': 'Login successful', 'token': token, 'next_page' : next_page}
+        return response_data, 200
+        
 
     def order_ride(self, data, user_id):
         try:

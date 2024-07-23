@@ -6,9 +6,30 @@ const api = axios.create({
 });
 
 export const loginUser = async (username, password) => {
-  const response = await api.post('/users/login', { username, password });
-  return response.data;
-};
+  try {
+    const response = await api.post('/users/login', { username, password });
+
+    // Check if response is in expected format
+    if (response.data && response.data.token) {
+      return response.data;
+    } else {
+      // Handle unexpected response structure
+      throw new Error('Unexpected response format');
+    }
+  } catch (error) {
+    // Handle error responses and network errors
+    if (error.response) {
+      // Return detailed error message from server if available
+      return {
+        status: error.response.status,
+        message: error.response.data.message || 'An error occurred',
+      };
+    } else {
+      // Throw a network error if no response is available
+      throw new Error('Network error'); }
+    }
+  }
+
 
 export const getUserDashboard = async () => {
   const token = localStorage.getItem('acces_token')
