@@ -1,68 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Button, Container, Row, Col, ListGroup } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import axiosInstance from './axiosInstance';
 
 const DriverDashboard = () => {
-  const [rides, setRides] = useState([]);
+  const [dashboardData, setDashboardData] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchRides = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await axios.get('/drivers/display_rides');
-        setRides(response.data);
+        const response = await axiosInstance.get('/drivers/dashboard');
+        setDashboardData(response.data);
       } catch (error) {
-        console.error('Error fetching rides:', error);
+        console.error('Error fetching dashboard data:', error);
       }
     };
-
-    fetchRides();
+    fetchDashboardData();
   }, []);
 
-  const handleAccept = async (rideId) => {
-    try {
-      await axios.post(`/drivers/accept_ride/${rideId}`);
-      // Refresh the rides list after accepting
-      const response = await axios.get('/drivers/display_rides');
-      setRides(response.data);
-    } catch (error) {
-      console.error('Error accepting ride:', error);
-    }
-  };
-
-  const handleDecline = async (rideId) => {
-    try {
-      await axios.post(`/drivers/decline_ride/${rideId}`);
-      // Refresh the rides list after declining
-      const response = await axios.get('/drivers/display_rides');
-      setRides(response.data);
-    } catch (error) {
-      console.error('Error declining ride:', error);
-    }
-  };
-
   return (
-    <Container>
-      <Row>
-        <Col>
-          <h2>Driver Dashboard</h2>
-          <ListGroup>
-            {rides.map((ride) => (
-              <ListGroup.Item key={ride.ride_id}>
-                <h5>Ride ID: {ride.ride_id}</h5>
-                <p>Status: {ride.status}</p>
-                <p>Departure: {ride.departure}</p>
-                <p>Destination: {ride.destination}</p>
-                <Button onClick={() => handleAccept(ride.ride_id)} variant="success" className="me-2">
-                  Accept
-                </Button>
-                <Button onClick={() => handleDecline(ride.ride_id)} variant="danger">
-                  Decline
-                </Button>
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
+    <Container className="mt-5">
+      <Row className="justify-content-md-center">
+        <Col md={8}>
+          <Card>
+            <Card.Header>Driver Dashboard</Card.Header>
+            <Card.Body>
+              <h3>Welcome to the driver dashboard</h3>
+              <p>{dashboardData.message}</p>
+              <Button variant="primary" onClick={() => navigate('/order-ride')}>
+                Order a Ride
+              </Button>
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
     </Container>

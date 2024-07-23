@@ -1,49 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Button, Container, Card } from 'react-bootstrap';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 
-const AcceptRide = () => {
-  const { rideId } = useParams();
-  const [ride, setRide] = useState(null);
+const RideAccepted = ({ rideOrder }) => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchRide = async () => {
-      try {
-        const response = await axios.get(`/drivers/accept_ride/${rideId}`);
-        setRide(response.data);
-      } catch (error) {
-        console.error('Error fetching ride details:', error);
-      }
-    };
-
-    fetchRide();
-  }, [rideId]);
-
   return (
-    <Container>
-      <Card className="mt-4">
-        <Card.Header>
-          <h3>Ride Accepted</h3>
-        </Card.Header>
-        <Card.Body>
-          {ride ? (
-            <>
-              <p><strong>Ride ID:</strong> {ride.ride_id}</p>
-              <p><strong>Driver ID:</strong> {ride.driver_id}</p>
-              <p><strong>Accepted Time:</strong> {new Date(ride.accepted_time).toLocaleString()}</p>
-              <Button variant="primary" onClick={() => navigate('/drivers/dashboard')}>
+    <Container className="mt-5">
+      <Row className="justify-content-md-center">
+        <Col md={8}>
+          <Card>
+            <Card.Header>Ride Accepted</Card.Header>
+            <Card.Body>
+              <p><strong>Ride ID:</strong> {rideOrder.id}</p>
+              <p><strong>Passenger Name:</strong> {rideOrder.name}</p>
+              <p><strong>Departure:</strong> {rideOrder.departure}</p>
+              <p><strong>Destination:</strong> {rideOrder.destination}</p>
+              <p><strong>Accepted Time:</strong> {rideOrder.accepted_time}</p>
+              <p><strong>Status:</strong> {rideOrder.status}</p>
+              <p><strong>Driver ID:</strong> {rideOrder.driver_id}</p>
+              <Button
+                variant="primary"
+                onClick={() => navigate('/dashboard')}
+                className="me-2"
+              >
                 Back to Dashboard
               </Button>
-            </>
-          ) : (
-            <p>Loading...</p>
-          )}
-        </Card.Body>
-      </Card>
+              <Button
+                variant="primary"
+                onClick={() => navigate('/display-rides')}
+              >
+                See Remaining Available Rides
+              </Button>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </Container>
   );
 };
 
-export default AcceptRide;
+export default RideAccepted;

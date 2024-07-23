@@ -1,23 +1,19 @@
-
-import React, { useContext } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { UserContext } from './UserContext';
+import { useUser } from './UserContext';
 
-const ProtectedRoute = ({ element, requiredRole }) => {
-  const { user } = useContext(UserContext);
+const ProtectedRoute = ({ children, role }) => {
+  const { user } = useUser();
 
-  const isAuthenticated = user.isAuthenticated;
-  const hasRole = requiredRole ? user.role === requiredRole : true;
-
-  if (!isAuthenticated || user.role === "") {
-    return <Navigate to="/users/login" />;
+  if (!user) {
+    return <Navigate to="/login" />;
   }
 
-  if (requiredRole && !hasRole ) {
-    return <Navigate to="/" />;
+  if (role && user.role !== role) {
+    return <Navigate to="/unauthorized" />;
   }
 
-  return element;
+  return children;
 };
 
 export default ProtectedRoute;
