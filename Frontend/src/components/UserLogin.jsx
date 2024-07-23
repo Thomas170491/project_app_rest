@@ -13,7 +13,9 @@ function UserLogin() {
 
   useEffect(() => {
     if (user.isAuthenticated) {
-      navigate('/');
+      navigate(user.role === 'admin' ? '/admins/dashboard' : 
+               user.role === 'driver' ? '/drivers/dashboard' : 
+               '/users/dashboard');
     }
   }, [user, navigate]);
 
@@ -21,28 +23,30 @@ function UserLogin() {
     e.preventDefault();
     try {
       const response = await loginUser(username, password);
-      console.log('Login API response:', response); // Log the response to inspect it
 
-      if (response && response.status === 200) {
-        const userData = response; // Directly use the response object
+      console.log('Login API response:', response);
+
+      if (response && response.token) {
+        const userData = {
+          username, 
+          isAuthenticated: true,
+          role: response.role // Add role to userData if available
+        };
         const nextPage = response.next_page;
 
         if (nextPage) {
-          localStorage.setItem('access_token', response.access_token);
-          login(userData); // Log the user in
-          navigate(nextPage); // Redirect based on next_page
+          localStorage.setItem('access_token', response.token);
+          login(userData); 
+          navigate(nextPage); 
         } else {
           throw new Error('Next page is not defined in the response');
         }
-      } else if (response && response.status === 401) {
-        alert('Unauthorized access. Redirecting to home page.');
-        navigate('/');
       } else {
-        alert(`Unexpected error: ${response.statusText}`);
+        alert(`Unexpected response format: ${JSON.stringify(response)}`);
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert(`Login error: ${error.response ? error.response.data.message : error.message}`);
+      alert(`Login error: ${error.message || 'An unexpected error occurred'}`);
     }
   };
 

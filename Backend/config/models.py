@@ -59,7 +59,7 @@ app = create_app()
 login_manager = LoginManager(app)
 mail = Mail(app)
 jwt = JWTManager(app)
-cors = CORS(app)
+cors = CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}) 
 
 
 

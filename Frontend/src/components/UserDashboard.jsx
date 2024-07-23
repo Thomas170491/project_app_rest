@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from './UserContext';
 import { getUserDashboard } from './api';
 
-
 const UserDashboard = () => {
   const { user } = useContext(UserContext);
   const [dashboardData, setDashboardData] = useState(null);
@@ -13,22 +12,23 @@ const UserDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const data = await getUserDashboard();
-        setDashboardData(data);
+        if (data.status === 401) {
+          alert('You are not allowed to visit this page');
+          navigate('/');
+        } else {
+          setDashboardData(data);
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
+        // Optionally handle the error state here
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
 
   if (!dashboardData) {
     return <div>Loading...</div>;
-  }
-
-  if(data.status == 401){
-    alert('You are not allowed to visit this page')
-    return navigate('/')
   }
 
   return (

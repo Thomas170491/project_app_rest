@@ -1,50 +1,68 @@
-import React, { useContext } from 'react';
-import { UserContext } from './UserContext'; // Assuming you have a UserProvider that provides the current user context
-import { Container, Row, Col, Button, ListGroup, ListGroupItem, Form } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Button, Container, Row, Col, ListGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { getDriverDashboard } from './api';
 
 const DriverDashboard = () => {
-  const { user } = useContext(UserContext); // Assuming you have a UserContext to get the current user info
-  const [driversDashboardData, setDriversDashboardData] = useState(null);
+  const [rides, setRides] = useState([]);
   const navigate = useNavigate();
 
-  // Fetch rides data (this should be replaced with your actual API call)
   useEffect(() => {
-    const fetchDriverDashboardData = async () => {
+    const fetchRides = async () => {
       try {
-        const data = await getDriverDashboard()
-        setDriversDashboardData(data)
-        
+        const response = await axios.get('/drivers/display_rides');
+        setRides(response.data);
       } catch (error) {
-        console.error('Error fetching data', error);
+        console.error('Error fetching rides:', error);
       }
     };
 
+    fetchRides();
+  }, []);
 
-    fetchDriverDashboardData();
-  }, );
+  const handleAccept = async (rideId) => {
+    try {
+      await axios.post(`/drivers/accept_ride/${rideId}`);
+      // Refresh the rides list after accepting
+      const response = await axios.get('/drivers/display_rides');
+      setRides(response.data);
+    } catch (error) {
+      console.error('Error accepting ride:', error);
+    }
+  };
 
-  if (!driversDashboardData) {
-    return <div>Loading...</div>;
-  }
-
-
+  const handleDecline = async (rideId) => {
+    try {
+      await axios.post(`/drivers/decline_ride/${rideId}`);
+      // Refresh the rides list after declining
+      const response = await axios.get('/drivers/display_rides');
+      setRides(response.data);
+    } catch (error) {
+      console.error('Error declining ride:', error);
+    }
+  };
 
   return (
     <Container>
-      <Row className="justify-content-center">
-        <Col md={8}>
-          <h2 className="mt-5">Driver Dashboard</h2>
-          {/* Display the driver's username */}
-          <div className="mb-3">
-            <p>Welcome, {user.username}!</p>
-          </div>
-          <Button variant="primary" jclassName="mt-2" onClick={() => navigate('/drivers/display_rides')}>
-            Display Rides
-          </Button>
-          <Link to='/drivers/display_rides'>Display Rides</Link>
-
+      <Row>
+        <Col>
+          <h2>Driver Dashboard</h2>
+          <ListGroup>
+            {rides.map((ride) => (
+              <ListGroup.Item key={ride.ride_id}>
+                <h5>Ride ID: {ride.ride_id}</h5>
+                <p>Status: {ride.status}</p>
+                <p>Departure: {ride.departure}</p>
+                <p>Destination: {ride.destination}</p>
+                <Button onClick={() => handleAccept(ride.ride_id)} variant="success" className="me-2">
+                  Accept
+                </Button>
+                <Button onClick={() => handleDecline(ride.ride_id)} variant="danger">
+                  Decline
+                </Button>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
         </Col>
       </Row>
     </Container>
