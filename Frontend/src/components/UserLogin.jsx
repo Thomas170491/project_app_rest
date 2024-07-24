@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { json, useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import { Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
 
@@ -11,6 +11,17 @@ const UserLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const response = await fetch('http://localhost:5000/users/login',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body : JSON.stringify({ username, password })
+        
+      
+    })
+    const responseBody = await response.json()
+    console.log(responseBody)
     try {
       await login({ username, password });
       navigate('/');
