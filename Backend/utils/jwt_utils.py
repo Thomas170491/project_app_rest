@@ -2,7 +2,7 @@ import os
 import jwt
 from datetime import datetime, timedelta
 
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-secret-key')  # Replace with your secret key
+SECRET_KEY = os.getenv('JWT_SECRET_KEY')  # Replace with your secret key
 
 def encode_jwt(payload, exp_minutes=30):
     payload['exp'] = datetime.utcnow() + timedelta(minutes=exp_minutes)
