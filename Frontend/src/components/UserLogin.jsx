@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { json, useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import { Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
+import axiosInstance from './axiosInstance';
 
 const UserLogin = () => {
   const [username, setUsername] = useState('');
@@ -10,6 +11,7 @@ const UserLogin = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     const response = await fetch('http://localhost:5000/users/login',{
       method: 'POST',
@@ -21,10 +23,14 @@ const UserLogin = () => {
       
     })
     const responseBody = await response.json()
-    console.log(responseBody)
+    //console.log('Response:' , responseBody)
+    const token = responseBody.token
+    localStorage.setItem('acces_token',token )
     try {
       await login({ username, password });
-      navigate('/');
+      
+      navigate(`${responseBody['next_page']}`);
+
     } catch (error) {
       console.error('Login failed:', error);
     }
