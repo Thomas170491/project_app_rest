@@ -28,9 +28,7 @@ const DriverDashboard = () => {
             <Card.Body>
               <h3>Welcome to the driver dashboard</h3>
               <p>{dashboardData.message}</p>
-              <Button variant="primary" onClick={() => navigate('/order-ride')}>
-                Order a Ride
-              </Button>
+
             </Card.Body>
           </Card>
         </Col>
