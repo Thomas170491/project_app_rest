@@ -1,21 +1,22 @@
 import React, { createContext, useContext, useState } from 'react';
 import axiosInstance from './axiosInstance';
+import { jwtDecode } from "jwt-decode";
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  const login = async ({ username, password }) => {
+    const login = async (token) => {
     try {
-      const response = await axiosInstance.post('users/login', { username, password });
-      const { access_token } = response.data;
-      localStorage.setItem('access_token', access_token);
+      const decodedToken = jwtDecode(token);
+      const username = decodedToken.username;
+      console.log('Decoded username:', username); // Debug log
       setUser({ username });
-      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      console.log('User :',{user})
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } catch (error) {
       console.error("Login failed:", error);
-      // Handle login error (e.g., show a message to the user)
     }
   };
 

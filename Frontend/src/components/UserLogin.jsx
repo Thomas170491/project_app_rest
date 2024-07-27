@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { json, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 import { Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
-import axiosInstance from './axiosInstance';
 
 const UserLogin = () => {
   const [username, setUsername] = useState('');
@@ -11,26 +10,22 @@ const UserLogin = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-    const response = await fetch('http://localhost:5000/users/login',{
+    const response = await fetch('http://localhost:5000/users/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body : JSON.stringify({ username, password })
-        
-      
-    })
-    const responseBody = await response.json()
-    //console.log('Response:' , responseBody)
-    const token = responseBody.token
-    localStorage.setItem('acces_token',token )
-    try {
-      await login({ username, password });
-      
-      navigate(`${responseBody['next_page']}`);
+      body: JSON.stringify({ username, password })
+    });
 
+    const responseBody = await response.json();
+    const token = responseBody.token;
+    localStorage.setItem('access_token', token);
+
+    try {
+      await login(token);
+      navigate(responseBody['next_page']);
     } catch (error) {
       console.error('Login failed:', error);
     }
