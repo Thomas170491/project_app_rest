@@ -1,37 +1,88 @@
-import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { Navbar, Nav } from 'react-bootstrap';
-import { UserContext } from './UserContext';
+import React, { useContext } from "react";
+import { Nav, Navbar } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from "./UserContext";
 
 const NavigationBar = () => {
-  const { user, logout } = useContext(UserContext);
+  const navigate = useNavigate();
+  const { logout } = useContext(UserContext);
+  const token = localStorage.getItem("access_token");
+  const user = localStorage.getItem("user");
 
+  const notificationPage = async () => {
+    navigate("/notification");
+  };
+  const payPage = async () => {
+    navigate("/users/payment");
+  };
+
+  const logoutRequest = async () => {
+    console.log("heree");
+    const response = await fetch("http://localhost:8000/logout/", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const responseBody = await response.json();
+    if (responseBody.status === "success") {
+      console.log(responseBody);
+      logout();
+      navigate("/users/login");
+    } else {
+      console.error("There is error in logging out", responseBody.message);
+    }
+  };
   return (
     <Navbar bg="light" expand="lg">
-      <Navbar.Brand as={Link} to="/">RideShare</Navbar.Brand>
+      <Navbar.Brand as={Link} to="/">
+        RideShare
+      </Navbar.Brand>
       <Navbar.Toggle aria-controls="navbarNav" />
       <Navbar.Collapse id="navbarNav">
         <Nav className="ml-auto">
           {user === null ? (
-            <Nav.Link as={Link} to="/users/login">User Login</Nav.Link>
+            <Nav.Link as={Link} to="/users/login">
+              User Login
+            </Nav.Link>
           ) : (
             <>
-              {user.role === 'admin' && (
+              <Nav.Link onClick={() => logoutRequest()}>Logout</Nav.Link>
+              <br />
+              <Nav.Link onClick={() => notificationPage()}>
+                Notifications
+              </Nav.Link>
+              <br />
+              <Nav.Link onClick={() => payPage()}>Pay</Nav.Link>
+
+              {user.role === "admin" && (
                 <>
-                  <Nav.Link as={Link} to="/admins/dashboard">Admin Dashboard</Nav.Link>
-                  <Nav.Link as={Link} to="/" onClick={logout}>Logout</Nav.Link>
+                  <Nav.Link as={Link} to="/admins/dashboard">
+                    Admin Dashboard
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/" onClick={logout}>
+                    Logout
+                  </Nav.Link>
                 </>
               )}
-              {user.role === 'driver' && (
+              {user.role === "driver" && (
                 <>
-                  <Nav.Link as={Link} to="/drivers/dashboard">Driver Dashboard</Nav.Link>
-                  <Nav.Link as={Link} to="/" onClick={logout}>Logout</Nav.Link>
+                  <Nav.Link as={Link} to="/drivers/dashboard">
+                    Driver Dashboard
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/" onClick={logout}>
+                    Logout
+                  </Nav.Link>
                 </>
               )}
-              {user.role === 'user' && (
+              {user.role === "user" && (
                 <>
-                  <Nav.Link as={Link} to="/users/dashboard">User Dashboard</Nav.Link>
-                  <Nav.Link as={Link} to="/" onClick={logout}>Logout</Nav.Link>
+                  <Nav.Link as={Link} to="/users/dashboard">
+                    User Dashboard
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/" onClick={logout}>
+                    Logout
+                  </Nav.Link>
                 </>
               )}
             </>

@@ -1,33 +1,54 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from './UserContext';
-import { Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
+import React, { useState } from "react";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+
+import { useUser } from "./UserContext";
 
 const UserLogin = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useUser();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:5000/users/login', {
-      method: 'POST',
+    const response = await fetch("http://localhost:8000/login/", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
     });
-
     const responseBody = await response.json();
-    const token = responseBody.token;
-    localStorage.setItem('access_token', token);
-
-    try {
-      await login(token);
-      navigate(responseBody['next_page']);
-    } catch (error) {
-      console.error('Login failed:', error);
+    if (responseBody.status === "success") {
+      console.log(responseBody);
+      console.log(responseBody.data.token);
+      const id = responseBody.data.id;
+      const username = responseBody.data.username;
+      const email = responseBody.data.email;
+      const name = responseBody.data.name;
+      const is_superuser = responseBody.data.is_superuser;
+      const role = responseBody.data.role;
+      console.log(is_superuser);
+      await login(
+        {
+          id: id,
+          username: username,
+          email: email,
+          name: name,
+          role: role,
+        },
+        responseBody.data.token
+      );
+      if (is_superuser) {
+        window.open("http://localhost:8000/admin/");
+      } else if (role === "driver") {
+        navigate("/drivers/dashboard");
+      } else {
+        navigate("/users/dashboard");
+      }
+    } else {
+      console.error("Login failed:", responseBody.message);
     }
   };
 

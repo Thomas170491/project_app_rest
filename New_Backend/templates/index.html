@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    Invite Users
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="add email" required>
+        <br>
+        <br>
+        <input type="name" name="name" placeholder="add name" required>
+        <br>
+        <br>
+        <select name="role">
+            <option value="customer">Customer</option>
+            <option value="driver">Driver</option>
+        </select>
+        <br>
+        <br>
+
+        <button type="submit">Invite</button>
+    </form>
+    <br>
+    <br>
+    {% for user in pending_users %}
+    <p>{{user.email}} ------- {{user.name}} ------ {{user.role}} ------ {{user.is_registered}}</p>
+    {% endfor %}
+
+
+</body>
+
+</html>

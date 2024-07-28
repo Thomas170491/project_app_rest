@@ -1,35 +1,24 @@
-import React, { createContext, useContext, useState } from 'react';
-import axiosInstance from './axiosInstance';
-import { jwtDecode } from "jwt-decode";
+import React, { createContext, useContext, useState } from "react";
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-    const login = async (token) => {
+  const login = async (userData, token) => {
     try {
-      const decodedToken = jwtDecode(token);
-      const username = decodedToken.username;
-      console.log('Decoded username:', username); // Debug log
-      setUser( username );
-      console.log('User :',user)
-     // Using a callback to log the updated state
-      setUser((prevUser) => {
-      const updatedUser =  username ;
-      console.log("Updated user:", updatedUser); // Debug log after state update
-      return updatedUser;
-      });
-      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(userData);
+      localStorage.setItem("access_token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
     } catch (error) {
       console.error("Login failed:", error);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
     setUser(null);
-    delete axiosInstance.defaults.headers.common['Authorization'];
   };
 
   return (
