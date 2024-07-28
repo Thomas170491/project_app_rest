@@ -184,6 +184,8 @@ GitHub.sublime-settings
 media/*
 
 venv
+env
+.env
 temp_files
 
 data.json

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation </title>
+    <script src="https://kit.fontawesome.com/479dcbb94f.js" crossorigin="anonymous"></script>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;700;800;900&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=Aladin&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=Aladin&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            text-decoration: none;
+            list-style: none;
+            font-family: "Aladin", sans-serif;
+            font-family: "Poppins", sans-serif;
+
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        :root {
+            --dark: #34495e;
+            --light: #ffffff;
+            --success: #0abf30;
+            --error: #e24d4c;
+            --warning: #e9bd0c;
+            --info: #3498db;
+        }
+
+        body {
+            background: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 640px;
+        }
+
+        .main-box {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        .logo {
+            width: 200px;
+        }
+
+        img {
+            width: 100%;
+        }
+
+        .box {
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+            width: 560px;
+            background: #f2f2f2;
+            border-radius: 8px;
+            padding: 25px 30px;
+            padding-top: 40px;
+            text-align: center;
+
+        }
+
+        .box h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #e24d4c;
+            margin-bottom: 20px;
+        }
+
+        .box p {
+            color: #2e2e2b;
+            font-size: 14px;
+            line-height: 24px;
+
+        }
+
+        .box p a {
+            text-decoration: underline;
+            color: #3498db;
+        }
+
+        .box .btn {
+            padding: 10px 20px;
+            color: #f2f2f2;
+            background: #01b768;
+            border-radius: 4px;
+        }
+
+        .box .btn:hover {
+            opacity: 0.7;
+        }
+
+        .box .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2e2e2b;
+        }
+
+        .box ul {
+            display: flex;
+            align-content: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 5px;
+        }
+
+        .box ul a {
+            font-size: 20px;
+            color: #2e2e2b;
+        }
+
+        .box .store-app {
+            display: flex;
+            justify-content: center;
+            padding: 5px 0;
+            gap: 10px;
+        }
+
+        .box .store-app a {
+            width: 142px;
+            height: 47px;
+            overflow: hidden;
+        }
+
+        .box .store-app a img {
+            width: 140px;
+            height: 45px;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 6px;
+
+        }
+
+
+        footer {
+            width: 100%;
+            background: #d4d4d4;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-box">
+        <div class="box">
+            <img class="logo" src="{% static 'images/wide-logo.png' %}" alt="">
+            <h1>Activate Your Account</h1>
+            <p><strong>Welcome to Ride Share!</strong>
+                <br>
+                <br>
+                Hi, You're almost ready to get started. Please click on the button below to verify your email
+                address and
+                create account to get started
+            </p>
+            <br>
+            <br>
+            <a class="btn" href="http://{{ domain }}{% url 'activate' uidb64=email token=token %}">VERIFY YOUR EMAIL</a>
+            <br>
+
+        </div>
+
+    </div>
+</body>
+
+</html>

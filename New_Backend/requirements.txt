@@ -1,0 +1,11 @@
+Django==4.2.8                                   # https://pypi.org/project/Django/4.2.8/
+python-decouple==3.8                            # https://pypi.org/project/python-decouple/
+djangorestframework==3.14.0                     # https://pypi.org/project/djangorestframework/
+djangorestframework-simplejwt==5.3.1            # https://pypi.org/project/djangorestframework-simplejwt/
+django-cors-headers==4.3.1                      # https://pypi.org/project/django-cors-headers/
+requests==2.31.0                                # https://pypi.org/project/requests/
+python-jose==3.3.0                              # https://pypi.org/project/python-jose/
+pillow==10.2.0                                  # https://pypi.org/project/pillow/
+psycopg2-binary==2.9.9                          # https://pypi.org/project/psycopg2-binary/
+gunicorn==21.2.0    
+python-dotenv==1.0.1
