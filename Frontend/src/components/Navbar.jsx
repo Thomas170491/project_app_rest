@@ -7,7 +7,7 @@ const NavigationBar = () => {
   const navigate = useNavigate();
   const { logout } = useContext(UserContext);
   const token = localStorage.getItem("access_token");
-  const user = localStorage.getItem("user");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const notificationPage = async () => {
     navigate("/notification");
@@ -15,6 +15,10 @@ const NavigationBar = () => {
   const payPage = async () => {
     navigate("/users/payment");
   };
+  const UserDashboard = () => {
+    navigate('/users/dashboard')
+  }
+
 
   const logoutRequest = async () => {
     console.log("heree");
@@ -53,18 +57,7 @@ const NavigationBar = () => {
                 Notifications
               </Nav.Link>
               <br />
-              <Nav.Link onClick={() => payPage()}>Pay</Nav.Link>
-
-              {user.role === "admin" && (
-                <>
-                  <Nav.Link as={Link} to="/admins/dashboard">
-                    Admin Dashboard
-                  </Nav.Link>
-                  <Nav.Link as={Link} to="/" onClick={logout}>
-                    Logout
-                  </Nav.Link>
-                </>
-              )}
+    
               {user.role === "driver" && (
                 <>
                   <Nav.Link as={Link} to="/drivers/dashboard">
@@ -75,13 +68,15 @@ const NavigationBar = () => {
                   </Nav.Link>
                 </>
               )}
-              {user.role === "user" && (
+              {user.role === "customer" && (
                 <>
-                  <Nav.Link as={Link} to="/users/dashboard">
+                  <Nav.Link as={Link} to="/users/dashboard" onClick={()=> UserDashboard() }>
                     User Dashboard
                   </Nav.Link>
-                  <Nav.Link as={Link} to="/" onClick={logout}>
-                    Logout
+                  <br />
+              
+                  <Nav.Link onClick={() => payPage()}>
+                    Pay
                   </Nav.Link>
                 </>
               )}
