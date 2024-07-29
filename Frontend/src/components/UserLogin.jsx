@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-
 import { useUser } from "./UserContext";
 
 const UserLogin = () => {
@@ -10,8 +9,13 @@ const UserLogin = () => {
   const { login } = useUser();
   const navigate = useNavigate();
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+
+
     const response = await fetch("http://localhost:8000/login/", {
       method: "POST",
       headers: {
@@ -29,7 +33,7 @@ const UserLogin = () => {
       const name = responseBody.data.name;
       const is_superuser = responseBody.data.is_superuser;
       const role = responseBody.data.role;
-      console.log(is_superuser);
+      
       await login(
         {
           id: id,
