@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "app",
+    "channels",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
@@ -56,8 +57,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
 ]
+
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173/*",
     "http://localhost:8000/*",
@@ -73,6 +75,8 @@ AUTHENTICATION_BACKENDS = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
     # it should be the last entry to prevent unauthorized access
 ]
+
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -90,6 +94,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "rideshare.wsgi.application"
+ASGI_APPLICATION = "rideshare.asgi.application"
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 
 REST_FRAMEWORK = {
