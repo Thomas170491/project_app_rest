@@ -9,4 +9,4 @@ pillow==10.2.0                                  # https://pypi.org/project/pillo
 psycopg2-binary==2.9.9                          # https://pypi.org/project/psycopg2-binary/
 gunicorn==21.2.0    
 python-dotenv==1.0.1
-channels==4.1.0
+channels==3.0.2

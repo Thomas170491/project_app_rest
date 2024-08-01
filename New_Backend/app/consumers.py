@@ -14,7 +14,6 @@ class MainConsumer(AsyncJsonWebsocketConsumer):
         It will be used to connect user to socket
         """
         req_user = self.scope["user"]
-        await self.accept()
         if req_user.is_authenticated:
             self.ride_group = f"ride_share_{req_user.id}"
             await self.channel_layer.group_add(self.ride_group, self.channel_name)
@@ -44,14 +43,19 @@ class MainConsumer(AsyncJsonWebsocketConsumer):
             return
 
         data_json = json.loads(text_data)
-        self.target_user = self.get_user(user_id=data_json.get("target_user"))
+        self.target_user = await self.get_user(user_id=data_json.get("target_user"))
+        location = data_json.get("location")
         # TODO: ADd or process logic
-        res_json = await self.response_event_creator()
-        print(data_json)
+        # res_json = await self.response_event_creator()
+
+        res_json = location
         await self.channel_layer.group_send(
             f"ride_share_{self.target_user.id}",
             {"type": "response_request", "res_json": res_json},
         )
+
+    async def response_request(self, event):
+        await self.send(text_data=json.dumps(event["res_json"]))
 
     async def response_event_creator(self):
         return {}
