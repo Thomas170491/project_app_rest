@@ -16,13 +16,12 @@ const NavigationBar = () => {
     navigate("/users/payment");
   };
   const UserDashboard = () => {
-    navigate('/users/dashboard')
-  }
-
+    navigate("/users/dashboard");
+  };
+  const baseUrl = import.meta.env.VITE_REACT_APP_BASE_URL;
 
   const logoutRequest = async () => {
-    console.log("heree");
-    const response = await fetch("http://localhost:8000/logout/", {
+    const response = await fetch(`http://${baseUrl}/logout/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -57,7 +56,7 @@ const NavigationBar = () => {
                 Notifications
               </Nav.Link>
               <br />
-    
+
               {user.role === "driver" && (
                 <>
                   <Nav.Link as={Link} to="/drivers/dashboard">
@@ -70,14 +69,16 @@ const NavigationBar = () => {
               )}
               {user.role === "customer" && (
                 <>
-                  <Nav.Link as={Link} to="/users/dashboard" onClick={()=> UserDashboard() }>
+                  <Nav.Link
+                    as={Link}
+                    to="/users/dashboard"
+                    onClick={() => UserDashboard()}
+                  >
                     User Dashboard
                   </Nav.Link>
                   <br />
-              
-                  <Nav.Link onClick={() => payPage()}>
-                    Pay
-                  </Nav.Link>
+
+                  <Nav.Link onClick={() => payPage()}>Pay</Nav.Link>
                 </>
               )}
             </>

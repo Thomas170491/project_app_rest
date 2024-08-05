@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+const baseUrl = import.meta.env.VITE_REACT_APP_WEBSOCKET_URL;
 
 const Location = () => {
   const token = localStorage.getItem("access_token");
@@ -9,7 +10,7 @@ const Location = () => {
 
   useEffect(() => {
     wsRef.current = new WebSocket(
-      `ws://9759-103-105-209-22.ngrok-free.app/ws/ride-share/?token=${token}`
+      `ws://${baseUrl}/ws/ride-share/?token=${token}`
       // `ws://localhost:8000/ws/ride-share/?token=${token}`
     );
     wsRef.current.onopen = () => {

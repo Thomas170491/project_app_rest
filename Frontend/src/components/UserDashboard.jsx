@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+const baseUrl = import.meta.env.VITE_REACT_APP_BASE_URL;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ const Dashboard = () => {
 
   const order_ride = async (username) => {
     console.log(username);
-    const response = await fetch("http://localhost:8000/order-ride/", {
+    const response = await fetch(`https://${baseUrl}/order-ride/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -27,7 +28,7 @@ const Dashboard = () => {
   };
 
   const fetch_user_dashboard = async () => {
-    const response = await fetch("http://localhost:8000/user-dashboard/", {
+    const response = await fetch(`https://${baseUrl}/user-dashboard/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
