@@ -9,7 +9,8 @@ const Location = () => {
 
   useEffect(() => {
     wsRef.current = new WebSocket(
-      `ws://localhost:8000/ws/ride-share/?token=${token}`
+      `ws://9759-103-105-209-22.ngrok-free.app/ws/ride-share/?token=${token}`
+      // `ws://localhost:8000/ws/ride-share/?token=${token}`
     );
     wsRef.current.onopen = () => {
       console.log("Connected to the server");
@@ -20,6 +21,11 @@ const Location = () => {
     };
     wsRef.current.onerror = (error) => {
       console.log("Websocket error: ", error);
+    };
+
+    // Receive data from socket
+    wsRef.current.onmessage = (message) => {
+      console.log(message.data);
     };
 
     return () => {
