@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
+const baseUrl = import.meta.env.VITE_REACT_APP_BASE_URL;
 
 const Pay = ({ rideId }) => {
   const [cardnum, setCardnum] = useState("");
@@ -22,7 +23,7 @@ const Pay = ({ rideId }) => {
     if (cvv2.length !== 3) {
       console.log("CVV2 is not valid");
     }
-    const response = await fetch("http://localhost:8000/payment/", {
+    const response = await fetch(`https://${baseUrl}/payment/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -37,7 +38,7 @@ const Pay = ({ rideId }) => {
     }
   };
   const handlePay = async () => {
-    const response = await fetch("http://localhost:8000/payment/", {
+    const response = await fetch(`https://${baseUrl}/payment/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

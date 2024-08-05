@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+const baseUrl = import.meta.env.VITE_REACT_APP_BASE_URL;
 
 const Notification = () => {
   const token = localStorage.getItem("access_token");
@@ -8,7 +9,7 @@ const Notification = () => {
   const [notiReceiver, setNotiReceiver] = useState([]);
 
   const markNoti = async (noti_id) => {
-    const response = await fetch("http://localhost:8000/mark-notification/", {
+    const response = await fetch(`https://${baseUrl}/mark-notification/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -23,7 +24,7 @@ const Notification = () => {
     }
   };
   const acceptOrder = async (order_id, is_accepted) => {
-    const response = await fetch("http://localhost:8000/accept-order/", {
+    const response = await fetch(`https://${baseUrl}/accept-order/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -39,7 +40,7 @@ const Notification = () => {
   };
 
   const getNotifications = async () => {
-    const response = await fetch("http://localhost:8000/notification/", {
+    const response = await fetch(`https://${baseUrl}//notification/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

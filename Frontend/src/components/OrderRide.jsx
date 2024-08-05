@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import Map from "./Map"; // Assuming you have a Map component
+const baseUrl = import.meta.env.VITE_REACT_APP_BASE_URL;
 
 import "leaflet/dist/leaflet.css";
 
@@ -60,7 +61,7 @@ const OrderRide = () => {
   const bookRide = async (e) => {
     e.preventDefault();
     console.log(coordinates);
-    const response = await fetch("http://localhost:8000/book-ride/", {
+    const response = await fetch(`https://${baseUrl}/book-ride/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
