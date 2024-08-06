@@ -41,23 +41,25 @@ class MainConsumer(AsyncJsonWebsocketConsumer):
                 }
             )
             return
-
         data_json = json.loads(text_data)
-
-        print(data_json)
-
+        self.sender = self.scope["user"]
         self.target_user = await self.get_user(user_id=data_json.get("targetUser"))
         latitude = data_json.get("latitude")
         longitude = data_json.get("longitude")
-        # TODO: ADd or process logic
-        # res_json = await self.response_event_creator()
-
         res_json = {
+            "username": self.sender.username,
+            "name": self.sender.name,
+            "email": self.sender.email,
+            "phone_number": self.sender.phone_number,
             "latitude": latitude,
             "longitude": longitude,
         }
         await self.channel_layer.group_send(
             f"ride_share_{self.target_user.id}",
+            {"type": "response_request", "res_json": res_json},
+        )
+        await self.channel_layer.group_send(
+            f"ride_share_{self.sender.id}",
             {"type": "response_request", "res_json": res_json},
         )
 
