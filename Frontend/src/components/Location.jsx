@@ -87,8 +87,9 @@ const Location = () => {
     const sendLocation = (position) => {
       const { latitude, longitude } = position.coords;
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        // let latitude = 1111.111;
-        // let longitude = 1111.111;
+        let latitude = 29.802685;
+        let longitude = 71.738248;
+
         wsRef.current.send(
           JSON.stringify({ latitude, longitude, targetUser, startRide })
         );
@@ -128,6 +129,47 @@ const Location = () => {
     lat: 40.712776,
     lng: -74.005974,
   };
+
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  const mapRef = useRef(null);
+  const directionsServiceRef = useRef(null);
+  const directionsRendererRef = useRef(null);
+  const onLoad = (mapInstance) => {
+    mapRef.current = mapInstance;
+    directionsServiceRef.current = new google.maps.DirectionsService();
+    directionsRendererRef.current = new google.maps.DirectionsRenderer();
+    directionsRendererRef.current.setMap(mapInstance);
+    setMapLoaded(true); // Set map as loaded
+  };
+  useEffect(() => {
+    if (mapLoaded && coordinates.driver && coordinates.user) {
+      const directionsService = directionsServiceRef.current;
+      const directionsRenderer = directionsRendererRef.current;
+
+      if (directionsService && directionsRenderer) {
+        directionsService.route(
+          {
+            origin: coordinates.driver,
+            destination: coordinates.user,
+            travelMode: google.maps.TravelMode.DRIVING,
+          },
+          (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              directionsRenderer.setDirections(result);
+            } else {
+              console.error("Error fetching directions:", result);
+            }
+          }
+        );
+      } else {
+        console.error(
+          "DirectionsService or DirectionsRenderer is not initialized"
+        );
+      }
+    }
+  }, [mapLoaded, coordinates.driver, coordinates.user]);
+
   return (
     <div>
       <h1>Sending Your Location.....</h1>
@@ -142,27 +184,24 @@ const Location = () => {
             mapContainerStyle={mapStyles}
             zoom={12}
             center={coordinates.user || defaultCenter} // Center map on default location
+            onLoad={onLoad} // Added onLoad handler
           >
             {coordinates.user && (
               <MarkerF
                 position={coordinates.user}
                 label="Customer"
-                icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
+                // icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
               />
             )}
             {coordinates.driver && (
               <MarkerF
                 position={coordinates.driver}
-                label="Customer"
-                icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
+                label="Driver"
+                // icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
               />
             )}
 
-            <MarkerF
-              position={coordinates.user}
-              label="Default Center"
-              icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
-            />
+            {/* <MarkerF position={coordinates.user} label="" /> */}
           </GoogleMap>
         </LoadScript>
       </div>
@@ -178,7 +217,6 @@ const Location = () => {
           <h5>My Current Location Updates</h5>
           {userInfo.map((message, index) => (
             <li key={index}>
-              <h6>{coordinates.user.latitude}</h6>
               {message.username}: {message.latitude}, {message.longitude}
             </li>
           ))}
