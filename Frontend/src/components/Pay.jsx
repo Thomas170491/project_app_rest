@@ -23,7 +23,7 @@ const Pay = ({ rideId }) => {
     if (cvv2.length !== 3) {
       console.log("CVV2 is not valid");
     }
-    const response = await fetch(`https://${baseUrl}/payment/`, {
+    const response = await fetch(`${baseUrl}/payment/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -38,7 +38,7 @@ const Pay = ({ rideId }) => {
     }
   };
   const handlePay = async () => {
-    const response = await fetch(`https://${baseUrl}/payment/`, {
+    const response = await fetch(`${baseUrl}/payment/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

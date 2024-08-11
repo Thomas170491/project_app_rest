@@ -10,7 +10,7 @@ const Dashboard = () => {
 
   const order_ride = async (username) => {
     console.log(username);
-    const response = await fetch(`https://${baseUrl}/order-ride/`, {
+    const response = await fetch(`${baseUrl}/order-ride/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -28,7 +28,7 @@ const Dashboard = () => {
   };
 
   const fetch_user_dashboard = async () => {
-    const response = await fetch(`https://${baseUrl}/user-dashboard/`, {
+    const response = await fetch(`${baseUrl}/user-dashboard/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

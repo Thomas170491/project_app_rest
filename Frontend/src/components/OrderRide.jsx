@@ -61,7 +61,7 @@ const OrderRide = () => {
   const bookRide = async (e) => {
     e.preventDefault();
     console.log(coordinates);
-    const response = await fetch(`https://${baseUrl}/book-ride/`, {
+    const response = await fetch(`${baseUrl}/book-ride/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

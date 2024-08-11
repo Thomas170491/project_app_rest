@@ -3,19 +3,17 @@ import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "./UserContext";
 var baseUrl = import.meta.env.VITE_REACT_APP_BASE_URL;
-console.log(`https://${baseUrl}/admin/`);
 
 const UserLogin = () => {
-  console.log(`https://${baseUrl}/admin/`);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useUser();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
+    console.log(username, password, baseUrl);
     e.preventDefault();
-
-    const response = await fetch(`https://${baseUrl}/login/`, {
+    const response = await fetch(`${baseUrl}/login/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -44,7 +42,7 @@ const UserLogin = () => {
         responseBody.data.token
       );
       if (is_superuser) {
-        window.open(`https://${baseUrl}/admin/`);
+        window.open(`${baseUrl}/admin/`);
       } else if (role === "driver") {
         navigate("/drivers/dashboard");
       } else {

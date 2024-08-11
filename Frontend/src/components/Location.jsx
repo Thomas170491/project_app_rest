@@ -1,4 +1,7 @@
+import { GoogleMap, LoadScript, MarkerF } from "@react-google-maps/api";
+
 import React, { useEffect, useRef, useState } from "react";
+
 const baseUrl = import.meta.env.VITE_REACT_APP_WEBSOCKET_URL;
 
 const Location = () => {
@@ -6,13 +9,23 @@ const Location = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [userInfo, setUserInfo] = useState([]); // Me
   const [targetUserInfo, setTargetUserInfo] = useState([]); // Target User
+  const [startRide, setStartRide] = useState(false);
 
-  const targetUser = "2";
+  const [coordinates, setCoordinates] = useState({
+    destination: null,
+    user: null,
+    driver: null,
+  });
+
+  let targetUser = "1";
+  if (user.username === "admin") {
+    targetUser = "2";
+  }
   const wsRef = useRef(null);
 
   useEffect(() => {
     wsRef.current = new WebSocket(
-      `wss://${baseUrl}/ws/ride-share/?token=${token}`
+      `${baseUrl}/ws/ride-share/?token=${token}`
       // `ws://localhost:8000/ws/ride-share/?token=${token}`
     );
     wsRef.current.onopen = () => {
@@ -29,6 +42,28 @@ const Location = () => {
     wsRef.current.onmessage = (message) => {
       console.log("backend", message.data);
       const data = JSON.parse(message.data);
+
+      if (data.role === "customer") {
+        setCoordinates((prev) => ({
+          ...prev,
+          user: {
+            lat: data.latitude,
+            lng: data.longitude,
+          },
+        }));
+      } else {
+        setCoordinates((prev) => ({
+          ...prev,
+          driver: {
+            lat: data.latitude,
+            lng: data.longitude,
+          },
+        }));
+      }
+      setCoordinates((prev) => ({
+        ...prev,
+        destination: data.destination,
+      }));
 
       if (data.username === user.username) {
         setUserInfo((prevUserInfo) => [...prevUserInfo, data]);
@@ -54,7 +89,9 @@ const Location = () => {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         // let latitude = 1111.111;
         // let longitude = 1111.111;
-        wsRef.current.send(JSON.stringify({ latitude, longitude, targetUser }));
+        wsRef.current.send(
+          JSON.stringify({ latitude, longitude, targetUser, startRide })
+        );
       }
     };
 
@@ -79,10 +116,56 @@ const Location = () => {
     }
   }, []);
 
+  const handleRide = () => {
+    setStartRide(true);
+  };
+
+  const mapStyles = {
+    height: "400px",
+    width: "800px",
+  };
+  const defaultCenter = {
+    lat: 40.712776,
+    lng: -74.005974,
+  };
   return (
     <div>
       <h1>Sending Your Location.....</h1>
-      <p>Here map will be added later</p>
+
+      {user.role === "customer" ? (
+        <button onClick={handleRide}>Start Ride</button>
+      ) : null}
+
+      <div className="map-container">
+        <LoadScript googleMapsApiKey="AIzaSyBD9TzCsljMc19-ZSoiBJrbuycySEBpirE">
+          <GoogleMap
+            mapContainerStyle={mapStyles}
+            zoom={12}
+            center={coordinates.user || defaultCenter} // Center map on default location
+          >
+            {coordinates.user && (
+              <MarkerF
+                position={coordinates.user}
+                label="Customer"
+                icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
+              />
+            )}
+            {coordinates.driver && (
+              <MarkerF
+                position={coordinates.driver}
+                label="Customer"
+                icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
+              />
+            )}
+
+            <MarkerF
+              position={coordinates.user}
+              label="Default Center"
+              icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Optional: custom icon
+            />
+          </GoogleMap>
+        </LoadScript>
+      </div>
       <div
         style={{
           display: "flex",
@@ -95,6 +178,7 @@ const Location = () => {
           <h5>My Current Location Updates</h5>
           {userInfo.map((message, index) => (
             <li key={index}>
+              <h6>{coordinates.user.latitude}</h6>
               {message.username}: {message.latitude}, {message.longitude}
             </li>
           ))}
