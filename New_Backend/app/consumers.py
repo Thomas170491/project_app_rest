@@ -42,6 +42,9 @@ class MainConsumer(AsyncJsonWebsocketConsumer):
             )
             return
         data_json = json.loads(text_data)
+
+        print(data_json)
+
         self.sender = self.scope["user"]
         self.target_user = await self.get_user(user_id=data_json.get("targetUser"))
         latitude = data_json.get("latitude")
@@ -50,9 +53,14 @@ class MainConsumer(AsyncJsonWebsocketConsumer):
             "username": self.sender.username,
             "name": self.sender.name,
             "email": self.sender.email,
+            "role": self.sender.role,
             "phone_number": self.sender.phone_number,
             "latitude": latitude,
             "longitude": longitude,
+            "destination": {
+                "latitude": "40.712776",
+                "longitude": " -74.005974",
+            },
         }
         await self.channel_layer.group_send(
             f"ride_share_{self.target_user.id}",

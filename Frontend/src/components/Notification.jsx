@@ -9,7 +9,7 @@ const Notification = () => {
   const [notiReceiver, setNotiReceiver] = useState([]);
 
   const markNoti = async (noti_id) => {
-    const response = await fetch(`https://${baseUrl}/mark-notification/`, {
+    const response = await fetch(`${baseUrl}/mark-notification/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -24,7 +24,7 @@ const Notification = () => {
     }
   };
   const acceptOrder = async (order_id, is_accepted) => {
-    const response = await fetch(`https://${baseUrl}/accept-order/`, {
+    const response = await fetch(`${baseUrl}/accept-order/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -40,7 +40,7 @@ const Notification = () => {
   };
 
   const getNotifications = async () => {
-    const response = await fetch(`https://${baseUrl}//notification/`, {
+    const response = await fetch(`${baseUrl}//notification/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -140,6 +140,8 @@ class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
+
+            print("data", data)
             username = data.get("username", None)
             password = data.get("password", None)
             if username in ["", None] or password in ["", None]:
