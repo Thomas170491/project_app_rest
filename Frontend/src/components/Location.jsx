@@ -3,6 +3,7 @@ import { GoogleMap, LoadScript, MarkerF } from "@react-google-maps/api";
 import React, { useEffect, useRef, useState } from "react";
 
 const baseUrl = import.meta.env.VITE_REACT_APP_WEBSOCKET_URL;
+const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const Location = () => {
   const token = localStorage.getItem("access_token");
@@ -179,7 +180,7 @@ const Location = () => {
       ) : null}
 
       <div className="map-container">
-        <LoadScript googleMapsApiKey="AIzaSyBD9TzCsljMc19-ZSoiBJrbuycySEBpirE">
+        <LoadScript googleMapsApiKey={googleMapsApiKey}>
           <GoogleMap
             mapContainerStyle={mapStyles}
             zoom={12}
