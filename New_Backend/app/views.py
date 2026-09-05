@@ -5,7 +5,6 @@ import random
 import re
 from datetime import timedelta
 
-import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
@@ -18,9 +17,7 @@ from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt
-from flask_jwt_extended import create_access_token
 from geopy.distance import geodesic
-from jose import jwt
 from rest_framework import status
 from rest_framework.decorators import throttle_classes
 from rest_framework.exceptions import AuthenticationFailed

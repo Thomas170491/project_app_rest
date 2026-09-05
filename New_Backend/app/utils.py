@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from PIL import Image
+
 
 from .token import generate_token
 
