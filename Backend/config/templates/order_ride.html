@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Order Ride</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD9TzCsljMc19-ZSoiBJrbuycySEBpirE&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config['GOOGLE_MAPS_API_KEY'] }}&callback=initMap" async defer></script>
     <script>
         let map;
         let geocoder;

@@ -28,7 +28,7 @@ dist-ssr
 *.sw?
 vite.config.js
 
-*.json
+Frontend/package-lock.json
 .firebaserc
 build 
 configuration.jsx

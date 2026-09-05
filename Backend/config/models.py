@@ -48,6 +48,7 @@ def create_app():
     app.config['PAYPAL_CLIENT_ID'] = os.getenv('PAYPAL_CLIENT_ID')
     app.config['PAYPAL_CLIENT_SECRET'] = os.getenv('PAYPAL_CLIENT_SECRET')
     app.config['PAYPAL_API_BASE'] = 'https://api.sandbox.paypal.com'
+    app.config["GOOGLE_MAPS_API_KEY"] = os.getenv("GOOGLE_MAPS_API_KEY")
     
     return app
 
