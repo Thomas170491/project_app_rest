@@ -1,5 +1,4 @@
 __pycache__/
-.env
 instance/
 test/
 # Logs
@@ -17,7 +16,6 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -139,7 +137,6 @@ celerybeat-schedule.*
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -173,7 +170,6 @@ Control.system-ca-bundle
 GitHub.sublime-settings
 
 # Visual Studio Code #
-.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -185,10 +181,13 @@ media/*
 
 venv
 env
-.env
 temp_files
 
 data.json
 
 
 celerybeat-schedule
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+config.bat
